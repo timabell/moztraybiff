@@ -12,7 +12,7 @@
 		chrome:author="Ilya Konstantinov"
 		chrome:name="traybiff"
 		chrome:extension="true"
-		chrome:authorURL="http://toast.unwind.co.il/code/moztraybiff/"
+		chrome:authorURL="http://moztraybiff.mozdev.org/"
 		chrome:settingsURL="chrome://traybiff/content/settings.xul"
 		chrome:description="Displays an icon in the system tray when new mail arrives.">
 		chrome:localeVersion="1.0.4">
