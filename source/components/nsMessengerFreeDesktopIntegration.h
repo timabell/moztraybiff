@@ -41,6 +41,7 @@
 #ifndef __nsMessengerFreeDesktopIntegration_h
 #define __nsMessengerFreeDesktopIntegration_h
 
+#include "nsIMessengerFreeDesktopIntegration.h"
 #include <nsIMessengerOSIntegration.h>
 #include <nsIFolderListener.h>
 #include <nsIObserver.h>
@@ -63,6 +64,7 @@
 class nsIStringBundle;
 
 class nsMessengerFreeDesktopIntegration :
+	public nsIMessengerFreeDesktopIntegration,
 	public nsIMessengerOSIntegration,
 	public nsIFolderListener,
 	public nsIObserver,
@@ -77,6 +79,7 @@ public:
   NS_DECL_NSIMESSENGEROSINTEGRATION
   NS_DECL_NSIFOLDERLISTENER
   NS_DECL_NSIOBSERVER
+  NS_DECL_NSIMESSENGERFREEDESKTOPINTEGRATION
 
 private:
   void ApplyPrefs();
@@ -84,12 +87,14 @@ private:
   void SetToolTipString(const PRUnichar * aToolTipString);
   void AddBiffIcon();
   void RemoveBiffIcon();
+  void ShowAsusLed();
+  void HideAsusLed();
   nsresult GetFirstFolderWithNewMail(char ** aFolderURI, char ** aMessageURI);
   nsresult GetStringBundle(const char* src, nsIStringBundle **aBundle);
 
 private:
   nsCOMPtr <nsIPrefBranch> mPrefBranch;
-  PRBool mShowBiffIcon;
+  PRBool mShowBiffIcon, mShowAsusLed;
   nsCOMPtr<nsISupportsArray> mFoldersWithNewMail;  // keep track of all the root folders with pending new mail
   nsCOMPtr<nsIAtom> mBiffStateAtom;
 

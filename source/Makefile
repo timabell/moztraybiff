@@ -46,6 +46,7 @@ ${XPI_FILENAME}: subdirs
 	rm -rf $@; \
 	zip $@ \
 		components/libtraybiff.so \
+		components/libtraybiff.xpt \
 		chrome/tray-biff.jar \
 		defaults/preferences/tray-biff.js \
 		$(XPI_EXTRA_FILES)

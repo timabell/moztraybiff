@@ -1,3 +1,4 @@
 <!ENTITY dialog.title "New Mail Icon">
 <!ENTITY features.caption  "Features">
 <!ENTITY showTrayIconForNewMessages.label  "Show tray icon when new messages arrive">
+<!ENTITY showAsusLedForNewMessages.label  "Light the New Mail Led on ASUS computers when new messages arrive">

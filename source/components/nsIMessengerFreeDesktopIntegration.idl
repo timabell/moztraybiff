@@ -1,0 +1,14 @@
+/**
+ */
+
+#include "nsISupports.idl"
+
+[scriptable, uuid(0a07c43c-9253-11d9-b5b3-0020182e3f64)]
+interface nsIMessengerFreeDesktopIntegration : nsISupports
+{
+  const unsigned short ASUS_LED_OK = 0;
+  const unsigned short ASUS_LED_MISSING = 1;
+  const unsigned short ASUS_LED_INACCESSIBLE = 2;
+
+  readonly attribute short asusLedStatus;
+};

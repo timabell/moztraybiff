@@ -67,12 +67,22 @@
 #include <nsIPrefService.h>
 #include <nsIPrefBranchInternal.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <errno.h>
+       
 // One day, we should use an icon from chrome.
 // Meanwhile, we'll embed the icon:
 #include "trayBiffIcon.h"
 
+// Pathname of ASUS New Mail Led control file
+const char* FILENAME_ASUS_LED = "/proc/acpi/asus/mled";
+
 // Prefs in use
 const char* PREF_BIFF_SHOW_ICON = "mail.biff.show_icon";
+const char* PREF_BIFF_SHOW_ASUS_LED = "mail.biff.show_asus_led";
 
 // String bundles
 const char* STRING_BUNDLE_MESSENGER = "chrome://messenger/locale/messenger.properties";
@@ -146,7 +156,8 @@ nsMessengerFreeDesktopIntegration::nsMessengerFreeDesktopIntegration() :
 
 nsMessengerFreeDesktopIntegration::~nsMessengerFreeDesktopIntegration()
 {
-  RemoveBiffIcon(); 
+  RemoveBiffIcon();
+  HideAsusLed();
 
   if (mTrayMenu != NULL)
      gtk_widget_destroy(mTrayMenu);
@@ -158,6 +169,7 @@ NS_IMPL_RELEASE(nsMessengerFreeDesktopIntegration)
 NS_INTERFACE_MAP_BEGIN(nsMessengerFreeDesktopIntegration)
    NS_INTERFACE_MAP_ENTRY_AMBIGUOUS(nsISupports, nsIMessengerOSIntegration)
    NS_INTERFACE_MAP_ENTRY(nsIMessengerOSIntegration)
+   NS_INTERFACE_MAP_ENTRY(nsIMessengerFreeDesktopIntegration)
    NS_INTERFACE_MAP_ENTRY(nsIFolderListener)
    NS_INTERFACE_MAP_ENTRY(nsIObserver)
    NS_INTERFACE_MAP_ENTRY(nsISupportsWeakReference)
@@ -207,6 +219,7 @@ nsMessengerFreeDesktopIntegration::Init()
   nsCOMPtr<nsIPrefBranchInternal> rootBranchInternal = do_QueryInterface(mPrefBranch);
   // ... with weak reference (PR_TRUE), to avoid cleaning up at shutdown.
   rv = rootBranchInternal->AddObserver(PREF_BIFF_SHOW_ICON, this, PR_TRUE);
+  rv = rootBranchInternal->AddObserver(PREF_BIFF_SHOW_ASUS_LED, this, PR_TRUE);
   NS_ENSURE_SUCCESS(rv,rv);
 
   // because we care about biff notifications
@@ -234,7 +247,8 @@ nsMessengerFreeDesktopIntegration::Observe(nsISupports *aSubject, const char *aT
      nsCAutoString prefName;
      prefName.AppendWithConversion(aData);
      
-     if (prefName.Equals(PREF_BIFF_SHOW_ICON))
+     if (prefName.Equals(PREF_BIFF_SHOW_ICON) ||
+         prefName.Equals(PREF_BIFF_SHOW_ASUS_LED))
         ApplyPrefs();
   }
   
@@ -244,8 +258,11 @@ nsMessengerFreeDesktopIntegration::Observe(nsISupports *aSubject, const char *aT
 void nsMessengerFreeDesktopIntegration::ApplyPrefs()
 {
 	mPrefBranch->GetBoolPref(PREF_BIFF_SHOW_ICON, &mShowBiffIcon);
+	mPrefBranch->GetBoolPref(PREF_BIFF_SHOW_ASUS_LED, &mShowAsusLed);
 	if (!mShowBiffIcon)
 		RemoveBiffIcon();
+	if (!mShowAsusLed)
+		HideAsusLed();
 }
 
 NS_IMETHODIMP
@@ -437,6 +454,50 @@ void nsMessengerFreeDesktopIntegration::RemoveBiffIcon()
   }
 }
 
+NS_IMETHODIMP
+nsMessengerFreeDesktopIntegration::GetAsusLedStatus(PRInt16 *aAsusLedStatus)
+{
+	if (access(FILENAME_ASUS_LED, R_OK | W_OK) == 0)
+	{
+		*aAsusLedStatus = ASUS_LED_OK;
+	}
+	else
+	{
+		switch(errno)
+		{
+			case ENOENT:
+			case ENOTDIR:
+				*aAsusLedStatus = ASUS_LED_MISSING;
+				break;
+			default:
+				*aAsusLedStatus = ASUS_LED_INACCESSIBLE;
+				break;
+		}
+	}
+	
+	return NS_OK;
+} 
+
+void nsMessengerFreeDesktopIntegration::ShowAsusLed()
+{
+	int fd = open(FILENAME_ASUS_LED, O_WRONLY);
+	if (fd != -1)
+	{
+		write(fd, "1", 1);
+		close(fd);
+	}
+}
+
+void nsMessengerFreeDesktopIntegration::HideAsusLed()
+{
+	int fd = open(FILENAME_ASUS_LED, O_WRONLY);
+	if (fd != -1)
+	{
+		write(fd, "0", 1);
+		close(fd);
+	}
+}
+
 void nsMessengerFreeDesktopIntegration::OnBiffIconActivate()
 {
   nsXPIDLCString folderURI, messageURI;
@@ -569,6 +630,11 @@ nsMessengerFreeDesktopIntegration::OnItemPropertyFlagChanged(nsISupports *item, 
         AddBiffIcon();
         FillToolTipInfo();    
       }
+      
+      if (mShowAsusLed)
+      {
+        ShowAsusLed();
+      }
     }
     else if (newFlag == nsIMsgFolder::nsMsgBiffState_NoMail)
     {
@@ -576,6 +642,7 @@ nsMessengerFreeDesktopIntegration::OnItemPropertyFlagChanged(nsISupports *item, 
       // notification. 
       mFoldersWithNewMail->Clear(); 
       RemoveBiffIcon();
+      HideAsusLed();
     }
   } // if the biff property changed
   

@@ -12,7 +12,7 @@
   <script type="application/x-javascript">
 
   <![CDATA[
-    var _elementIDs = ["showTrayIconForNewMessages"];
+    var _elementIDs = ["showTrayIconForNewMessages", "showAsusLedForNewMessages"];
     
     function init()
     {
@@ -20,7 +20,7 @@
 
       // initialize the default window values...
       for( var i = 0; i < _elementIDs.length; i++ )
-      {        
+      {
         var elementID = _elementIDs[i];
         var element = document.getElementById(elementID);
         if (!element) break;
@@ -32,6 +32,12 @@
         else if (eltType == "textbox")
           element.setAttribute("value", pref.getIntPref(element.getAttribute("prefstring")) );
       }
+      
+      // Check whether an ASUS Led exists
+      var fdiIntegrationSvc = Components.classes["@mozilla.org/messenger/osintegration;1"].getService();
+      var fdiIntegration = fdiIntegrationSvc.QueryInterface(Components.interfaces.nsIMessengerFreeDesktopIntegration);
+      var status = fdiIntegration.asusLedStatus;
+      document.getElementById('showAsusLedForNewMessages').setAttribute("disabled", (fdiIntegration.asusLedStatus != fdiIntegration.ASUS_LED_OK));
     }
 
     function enableField(aCheckbox, aNodeID) 
@@ -69,6 +75,7 @@
 	<groupbox>
 		<caption label="&features.caption;"/>
 		<checkbox id="showTrayIconForNewMessages" label="&showTrayIconForNewMessages.label;" pref="true" preftype="bool" prefstring="mail.biff.show_icon" prefattribute="checked"/>
+		<checkbox id="showAsusLedForNewMessages" label="&showAsusLedForNewMessages.label;" pref="true" preftype="bool" prefstring="mail.biff.show_asus_led" prefattribute="checked"/>
 	</groupbox>
 
 </dialog>

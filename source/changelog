@@ -6,6 +6,8 @@
 	* Added Catalan localization (courtesy of Toni Hermoso).
 	* Made the remaining strings (e.g. tray menu) localizable.
 	* Allowed compilation on 64-bit platforms.
+	* Added support for the New Mail led on ASUS computers
+	  (Linux-specific).
 
 1.0.7 (2004-12-31):
 

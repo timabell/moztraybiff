@@ -6,6 +6,7 @@ my $libs;
 my $include_path = $ENV{'MOZILLA_INCLUDE_PATH'};
 my $lib_prefix;
 my $util_prefix;
+my $idl_flags;
 my $mozilla_config_bin;
 
 GetOptions(
@@ -14,6 +15,7 @@ GetOptions(
 	"lib-prefix" => \$lib_prefix,
 	"util-prefix" => \$util_prefix,
 	"real-config=s" => \$mozilla_config_bin,
+	"idlflags" => \$idl_flags
 );
 
 $mozilla_config_bin = "mozilla-config"
@@ -26,7 +28,12 @@ $mozilla_config =
 
 if ($libs)
 {
-	system("$mozilla_config --libs $libs");
+	system("$mozilla_config", "--libs" => $libs);
+}
+
+if ($idl_flags)
+{
+	system($mozilla_config, "--idlflags");
 }
 
 if ($cflags)

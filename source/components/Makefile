@@ -2,9 +2,20 @@ SHELL = /bin/sh
 
 .PHONY: clean all
 
+ifndef REAL_CONFIG
+$(error Missing REAL_CONFIG variable, which should point to the real mozilla-config from your Mozilla installation. Please run the top-level Makefile.)
+endif
+
 MOZILLA_CONFIG = ./mozilla-config --real-config $(REAL_CONFIG)
-MOZILLA_LIB_PREFIX = $(shell $(MOZILLA_CONFIG) --lib-prefix)
-MOZILLA_UTIL_PREFIX = $(shell $(MOZILLA_CONFIG) --util-prefix}
+MOZILLA_LIB_PREFIX := \
+	$(shell $(MOZILLA_CONFIG) --lib-prefix)
+MOZILLA_UTIL_PREFIX := \
+	$(shell $(MOZILLA_CONFIG) --util-prefix)
+
+# This doesn't work, so we'll hardcode for now:
+# MOZILLA_IDLFLAGS := \
+# 	$(shell $(MOZILLA_CONFIG) --idlflags)
+MOZILLA_IDLFLAGS := -I/usr/share/idl/mozilla
 
 COMPONENT_NAME = libtraybiff
 
@@ -44,7 +55,7 @@ endif
 MOZ_LDFLAGS := \
 	$(shell $(MOZILLA_CONFIG) --libs xpcom)
 
-all: ${COMPONENT_NAME}.so
+all: ${COMPONENT_NAME}.so ${COMPONENT_NAME}.xpt
 
 testsystray: testsystray.c eggtrayicon.o eggstatusicon.o eggmarshalers.o
 	${CC} ${GTK_CFLAGS} ${GTK_LDFLAGS} ${CFLAGS} $^ -o $@
@@ -55,13 +66,26 @@ ${COMPONENT_NAME}.so: trayBiffModule.o nsMessengerFreeDesktopIntegration.o eggtr
 	fi
 	${CXX} ${MOZ_LDFLAGS} ${GTK_LDFLAGS} -shared -o $@ $^
 
+${COMPONENT_NAME}.xpt: nsIMessengerFreeDesktopIntegration.xpt
+	LD_LIBRARY_PATH=$(MOZILLA_UTIL_PREFIX):`pwd` $(MOZILLA_UTIL_PREFIX)/xpt_link $@ $<
+
+%.xpt: %.idl
+	LD_LIBRARY_PATH=$(MOZILLA_UTIL_PREFIX):`pwd` $(MOZILLA_UTIL_PREFIX)/xpidl $(MOZILLA_IDLFLAGS) -m typelib -e $@ $<
+
+%.h: %.idl
+	LD_LIBRARY_PATH=$(MOZILLA_UTIL_PREFIX):`pwd` $(MOZILLA_UTIL_PREFIX)/xpidl $(MOZILLA_IDLFLAGS) -m header -e $@ $<
+
+nsIMessengerFreeDesktopIntegration.xpt: nsIMessengerFreeDesktopIntegration.idl
+
+nsIMessengerFreeDesktopIntegration.h: nsIMessengerFreeDesktopIntegration.idl
+
 trayBiffIcon.h: message-mail-new.png
 	gdk-pixbuf-csource --raw --name=tray_biff_icon $< > $@
 
-trayBiffModule.o: trayBiffModule.cpp nsMessengerFreeDesktopIntegration.h
+trayBiffModule.o: trayBiffModule.cpp nsMessengerFreeDesktopIntegration.h nsIMessengerFreeDesktopIntegration.h
 	${CXX} ${MOZ_INCLUDES} ${GTK_CFLAGS} ${CXXFLAGS} -c $< -o $@
 
-nsMessengerFreeDesktopIntegration.o: nsMessengerFreeDesktopIntegration.cpp nsMessengerFreeDesktopIntegration.h trayBiffIcon.h
+nsMessengerFreeDesktopIntegration.o: nsMessengerFreeDesktopIntegration.cpp nsMessengerFreeDesktopIntegration.h trayBiffIcon.h nsIMessengerFreeDesktopIntegration.h
 	${CXX} ${MOZ_INCLUDES} ${GTK_CFLAGS} ${CXXFLAGS} -c $< -o $@
 
 eggtrayicon.o: eggtrayicon.c eggtrayicon.h
@@ -95,4 +119,4 @@ shell:
 	LD_LIBRARY_PATH=$MOZILLA_UTIL_PREFIX:`pwd` $MOZILLA_UTIL_PREFIX/xpcshell
 
 clean:
-	rm -f *.o *.so testsystray; exit 0
+	rm -f *.o *.so *.xpt nsIMessengerFreeDesktopIntegration.h testsystray; exit 0
