@@ -4,6 +4,7 @@
 <!DOCTYPE dialog SYSTEM "chrome://traybiff/locale/settings.dtd">
 <dialog xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         onload="init();"
+        title="&dialog.title;"
         buttons="accept, cancel"
         ondialogaccept="savePrefs();"
         persist="screenX screenY">
