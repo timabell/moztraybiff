@@ -505,15 +505,7 @@ egg_status_icon_update_image (EggStatusIcon *status_icon)
 	      }
 
 	    gtk_image_set_from_pixbuf (GTK_IMAGE (status_icon->priv->image), scaled);
-	    
-            GdkBitmap* scaled_mask = NULL;
-            gdk_pixbuf_render_pixmap_and_mask(scaled, NULL, &scaled_mask, 255);
-            if (scaled_mask)
-            {
-               gtk_widget_shape_combine_mask(GTK_WIDGET(status_icon->priv->tray_icon), scaled_mask, 0, 0);
-               g_object_unref(scaled_mask);
-            }
-            
+
 	    g_object_unref (scaled);
 	  }
 	else
