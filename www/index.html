@@ -4,37 +4,13 @@
 <div class="infoTab" id="whats-new">
 <h5 class="infoHeader">What's New</h5>
 <ul>
-<li>News item goes here</li>
-<li>More news items go here</li>
-<li><a href="http://www.mozdev.org/">mozdev.org</a></li>
+<li>Version 1.0.4 released</li>
 </ul>
 </div>
-
-<div class="infoTab" id="other-stuff">
-<h5 class="infoHeader">Other Stuff</h5>
-<ul>
-<li>stuff goes here</li>
-<li>more stuff goes here</li>
-</ul>
-</div>
-
-<!-- alternative image/table base tab works better in NS4 -->
-<!--
-<div class="infoTab" id="whats-new-image">
-<h5 class="infoHeader"><img src="http://www.mozdev.org/sharedimages/whatsnew_top.gif" width="154" alt="What's New"></h5>
-<div class="infoItems">
-<div>News item goes here</div>
-<div>More news item goes here</div>
-<div><a href="http://mozdev.org/">mozdev.org</a></div>
-</div>
-</div>
--->
-</div>
-<!-- ***************** INFO/NEWS *************** -->
 
 <!-- MAIN CONTENT -->
 
-<h1>Mozilla New Mail Icon (Biff)</h1>
+<h1 class="page-header">Mozilla New Mail Icon (Biff)</h1>
 
 <p>
 Mozilla New Mail Icon is an extension which displays an icon in the system tray when new mail arrives in your <a href="http://www.mozilla.org/">
@@ -44,14 +20,11 @@ Mozilla Thunderbird</a>
 . It supports the standard (FreeDesktop.org) system tray, as used by GNOME, KDE and IceWM.
 </p>
 
-
 <p style="font-style:italic">
 This extension was previously called Mozilla Free Desktop Integration.
 </p>
 
-
 <h2>Screenshots</h2>
-
 
 <p>
 <img src="screenshot-tray-icon-settings.png" alt="Screenshot showing system tray icon and the Settings dialog">
@@ -66,72 +39,6 @@ This extension was previously called Mozilla Free Desktop Integration.
 <li>A desktop environment with a system tray (compliant with the <a href="http://www.freedesktop.org/Standards/systemtray-spec">
 Free Desktop standard</a>: <a href="http://www.kde.org/">KDE</a>, <a href="http://www.gnome.org/">GNOME</a>, <a href="http://www.icewm.org/">IceWM</a> (running 'icewmtray').</li>
 </ul>
-
-<a name="releases"></a>
-
-<h2>Releases</h2>
-
-<ul>
-<li>Version 1.0.4 &ndash; supports Mozilla 1.7 and Thunderbird 0.7 (and nightlies; use 'make -DMOZ_TRUNK to compile)
-<dl>
-<dt>Binary XPI package (built for x86 Linux):</dt>
-<dd><a href="mozTrayBiff-1.0.4.xpi">mozTrayBiff-1.0.4.xpi</a></dd>
-<dt>Source tarball:</dt>
-<dd><a href="mozTrayBiff-1.0.4.tar.gz">mozTrayBiff-1.0.4.tar.gz</a>
-</dd>
-</dl>
-</li>
-<!--
-<li>Version 1.0.3 &ndash; supports Mozilla 1.7 and Thunderbird 0.7
-<dl>
-<dt>Binary XPI package (built for x86 Linux):</dt>
-<dd><a href="mozFreeDesktopIntegration-1.0.3.xpi">mozFreeDesktopIntegration-1.0.3.xpi</a></dd>
-<dt>Source tarball:</dt>
-<dd><a href="mozFreeDesktopIntegration-1.0.3.tar.gz">mozFreeDesktopIntegration-1.0.3.tar.gz</a></dd>
-</dl>
-</li>
-<li>Version 1.0.2 &ndash; supports Mozilla 1.7 and Thunderbird 0.6<dl>
-<dt>Binary XPI package (built for x86 Linux):</dt>
-<dd><a href="mozFreeDesktopIntegration-1.0.2.xpi">mozFreeDesktopIntegration-1.0.2.xpi</a></dd>
-<dt>Source tarball:</dt>
-<dd><a href="mozFreeDesktopIntegration-1.0.2.tar.gz">mozFreeDesktopIntegration-1.0.2.tar.gz</a>
-</dd>
-</dl>
-</li>
-
-<li>Version 1.0.1 &ndash; supports Mozilla 1.6 and Thunderbird 0.5<dl>
-<dt>Binary XPI package (built for x86 Linux and x86 FreeBSD 5.x):</dt>
-<dd><a href="mozFreeDesktopIntegration-1.0.1.xpi">mozFreeDesktopIntegration-1.0.1.xpi</a></dd>
-<dt>Source tarball:</dt>
-<dd><a href="mozFreeDesktopIntegration-1.0.1.tar.gz">mozFreeDesktopIntegration-1.0.1.tar.gz</a></dd>
-</dl>
-</li>
-!-->
-</ul>
-
-<h2>Installation instructions</h2>
-
-<p>
-The easiest way to install this Mozilla extension is by using the XPI package (assuming the XPI was built for your platform).
-</p>
-
-<ul>
-<li>On Mozilla Mail (of Mozilla "Suite"):
-<p>
-To install the XPI, run Mozilla from an account capable of writing to the system-wide Mozilla directory
-(typically, this will be the 'root' user). Then simply click the <a href="#releases">XPI link</a>.
-</p>
-</li>
-<li>On Mozilla Thunderbird:
-<ol>
-<li>Download the XPI file from this site (hold Shift while clicking the link to force it to download).</li>
-<li>Use 'Tools | Extensions' menu option to open the Extensions window.</li>
-<li>Press 'Install' and follow the instructions. Select the XPI file you've downloaded when required.</li>
-<li>Restart Thunderbird when required.</li>
-</ol>
-<p>
-Alternatively, you can build your own XPI by downloading the <a href="#releases">tarball</a> and following the instructions in the README file.
-</p>
 
 <h2>Implementation details</h2>
 
