@@ -1,3 +1,11 @@
+1.0.6 (...):
+
+	* Updated as compatible with Thunderbird 0.9.
+	* Jump to the first unread message when the
+	  "New Mail" notification icon is clicked.
+	* Fixed to compile on Solaris C++ compiler
+	  (thanks to Jean-Christophe Collet from Sun).
+
 1.0.5 (2004-10-01):
 
 	* Updated to work on Thunderbird 0.8.
