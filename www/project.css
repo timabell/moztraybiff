@@ -2,7 +2,9 @@
 
 #main-content-no-nav ol,
 #main-content ol {
-  list-style-position: inside;
+  list-style-type: decimal;
+  list-style-image: none;
+  list-style-position: outside;
   padding-left: 0;
   margin-left: 0;
 }
