@@ -6,7 +6,7 @@
 			<RDF:Seq>
 				<RDF:li resource="urn:mozilla:extension:{2e1b75f1-6b5a-4f1d-89b4-424f636e4fba}:1.0.4"/>
 				<RDF:li resource="urn:mozilla:extension:{2e1b75f1-6b5a-4f1d-89b4-424f636e4fba}:1.0.5"/>
-				<RDF:li resource="urn:mozilla:extension:{2e1b75f1-6b5a-4f1d-89b4-424f636e4fba}:1.0.6"/>
+<!--				<RDF:li resource="urn:mozilla:extension:{2e1b75f1-6b5a-4f1d-89b4-424f636e4fba}:1.0.6"/> -->
 			</RDF:Seq>
 		</em:updates>
 		<em:version>1.0.5</em:version>
@@ -37,6 +37,7 @@
 		</em:targetApplication>
 	</RDF:Description>
 
+	<!--
 	<RDF:Description about="urn:mozilla:extension:{2e1b75f1-6b5a-4f1d-89b4-424f636e4fba}:1.0.6">
 		<em:version>1.0.6</em:version>
 		<em:targetApplication>
@@ -48,4 +49,5 @@
 			</Description>
 		</em:targetApplication>
 	</RDF:Description>
+	-->
 </RDF:RDF>
