@@ -1,3 +1,9 @@
+1.0.8 (?):
+
+	* Enabled Hebrew localization.
+	* Added French localization.
+	* Made the remaining strings (e.g. tray menu) localizable.
+
 1.0.7 (2004-12-31):
 
 	* Compiled for Thunderbird 1.0.
