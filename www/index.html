@@ -33,7 +33,165 @@
 <!-- ***************** INFO/NEWS *************** -->
 
 <!-- MAIN CONTENT -->
-<p>The <strong>moztraybiff</strong> project content goes here.</p>
 
-<p><strong>Note:</strong> If you want to add an area for user feedback to any of your pages, take a look at the <a href="notes.html">notes.html</a>
-template.</p>
+<h1>Mozilla New Mail Icon (Biff)</h1>
+
+<p>
+Mozilla New Mail Icon is an extension which displays an icon in the system tray when new mail arrives in your <a href="http://www.mozilla.org/">
+Mozilla</a>
+ or <a href="http://www.mozilla.org/projects/thunderbird/">
+Mozilla Thunderbird</a>
+. It supports the standard (FreeDesktop.org) system tray, as used by GNOME, KDE and IceWM.
+</p>
+
+
+<p style="font-style:italic">
+This extension was previously called Mozilla Free Desktop Integration.
+</p>
+
+
+<h2>Screenshots</h2>
+
+
+<p>
+<img src="screenshot-tray-icon-settings.png" alt="Screenshot showing system tray icon and the Settings dialog">
+</p>
+
+
+<h2>System requirements</h2>
+
+<ul>
+<li><a href="http://www.gtk.org/">GTK+ 2.x</a> library.</li>
+<li>A GTK+ 2.x build of Mozilla. <span style="color:red">GTK+ 1.x builds of Mozilla will not work!</span></li>
+<li>A desktop environment with a system tray (compliant with the <a href="http://www.freedesktop.org/Standards/systemtray-spec">
+Free Desktop standard</a>: <a href="http://www.kde.org/">KDE</a>, <a href="http://www.gnome.org/">GNOME</a>, <a href="http://www.icewm.org/">IceWM</a> (running 'icewmtray').</li>
+</ul>
+
+<a name="releases"></a>
+
+<h2>Releases</h2>
+
+<ul>
+<li>Version 1.0.4 &ndash; supports Mozilla 1.7 and Thunderbird 0.7 (and nightlies; use 'make -DMOZ_TRUNK to compile)
+<dl>
+<dt>Binary XPI package (built for x86 Linux):</dt>
+<dd><a href="mozTrayBiff-1.0.4.xpi">mozTrayBiff-1.0.4.xpi</a></dd>
+<dt>Source tarball:</dt>
+<dd><a href="mozTrayBiff-1.0.4.tar.gz">mozTrayBiff-1.0.4.tar.gz</a>
+</dd>
+</dl>
+</li>
+<!--
+<li>Version 1.0.3 &ndash; supports Mozilla 1.7 and Thunderbird 0.7
+<dl>
+<dt>Binary XPI package (built for x86 Linux):</dt>
+<dd><a href="mozFreeDesktopIntegration-1.0.3.xpi">mozFreeDesktopIntegration-1.0.3.xpi</a></dd>
+<dt>Source tarball:</dt>
+<dd><a href="mozFreeDesktopIntegration-1.0.3.tar.gz">mozFreeDesktopIntegration-1.0.3.tar.gz</a></dd>
+</dl>
+</li>
+<li>Version 1.0.2 &ndash; supports Mozilla 1.7 and Thunderbird 0.6<dl>
+<dt>Binary XPI package (built for x86 Linux):</dt>
+<dd><a href="mozFreeDesktopIntegration-1.0.2.xpi">mozFreeDesktopIntegration-1.0.2.xpi</a></dd>
+<dt>Source tarball:</dt>
+<dd><a href="mozFreeDesktopIntegration-1.0.2.tar.gz">mozFreeDesktopIntegration-1.0.2.tar.gz</a>
+</dd>
+</dl>
+</li>
+
+<li>Version 1.0.1 &ndash; supports Mozilla 1.6 and Thunderbird 0.5<dl>
+<dt>Binary XPI package (built for x86 Linux and x86 FreeBSD 5.x):</dt>
+<dd><a href="mozFreeDesktopIntegration-1.0.1.xpi">mozFreeDesktopIntegration-1.0.1.xpi</a></dd>
+<dt>Source tarball:</dt>
+<dd><a href="mozFreeDesktopIntegration-1.0.1.tar.gz">mozFreeDesktopIntegration-1.0.1.tar.gz</a></dd>
+</dl>
+</li>
+!-->
+</ul>
+
+<h2>Installation instructions</h2>
+
+<p>
+The easiest way to install this Mozilla extension is by using the XPI package (assuming the XPI was built for your platform).
+</p>
+
+<ul>
+<li>On Mozilla Mail (of Mozilla "Suite"):
+<p>
+To install the XPI, run Mozilla from an account capable of writing to the system-wide Mozilla directory
+(typically, this will be the 'root' user). Then simply click the <a href="#releases">XPI link</a>.
+</p>
+</li>
+<li>On Mozilla Thunderbird:
+<ol>
+<li>Download the XPI file from this site (hold Shift while clicking the link to force it to download).</li>
+<li>Use 'Tools | Extensions' menu option to open the Extensions window.</li>
+<li>Press 'Install' and follow the instructions. Select the XPI file you've downloaded when required.</li>
+<li>Restart Thunderbird when required.</li>
+</ol>
+<p>
+Alternatively, you can build your own XPI by downloading the <a href="#releases">tarball</a> and following the instructions in the README file.
+</p>
+
+<h2>Implementation details</h2>
+
+<p>
+This extension is made of a binary XPCOM component (C++) and XUL files. It employs two Mozilla
+extension techniques: XPCOM implementation of a known CID, and XUL overlays.
+</p>
+
+<p>
+The XPCOM component provides the nsMessengerFreeDesktopIntegration CID.
+Mozilla Mail tries to create a component with this CID and silently ignores if it doesn't exist,
+assuming the platform doesn't have any specific mail integration features. For example, the implementation
+on Windows adds a notification icon and updates Windows XP' Unread Mail count. That way, we can easily
+provide support for our platform with an "outside" extension. (If only all things in Mozilla could be so easily
+extended...). The nsMessengerFreeDesktopIntegration interface is not frozen and might (though unlikely)
+change in future Mozilla versions. The interface itself doesn't have any members: it's simply a way for
+us to bootstrap (using NS_GENERIC_FACTORY_CONSTRUCTOR_INIT) whenever Mozilla Mail opens and to sign up
+as a folder observer and wait for BiffState changes. The tray icon GTK code was taken from libegg.
+</p>
+
+<p>
+The XUL files integrate into Mozilla's <em>Preferences</em> (with XUL) and provide a Settings dialog for Thunderbird's <em>Extensions</em> dialog.
+</p>
+
+<p>
+The build process required writing some custom code: a custom mozilla-config script which provides some information not available from the stock mozilla-config and a bunch of Makefiles to facilitate building the binary component and the XPI package. Unlike most XPIs, this XPI script tries to pick the right binary component for your platform, if available. That way, the XPI can ship with binary components pre-compiled for multiple platforms.
+</p>
+
+<p>
+As if often is with Mozilla-based projects, I have stumbled on some bugs and shortcomings which hindered the functionality of this project:
+</p>
+
+<ul>
+<li>
+<a href="http://bugzilla.mozilla.org/show_bug.cgi?id=227653">
+#227653: Install.refreshPlugins should autoregister XPCOM components</a>
+</li>
+</ul>
+
+<p>
+As they are resolved, I'll fix the extension to work even better.
+</p>
+
+<h2>Contact and support</h2>
+
+<p>
+You can report problems and suggest new features for the next version of this extension by emailing me at <span id="spamAddy">
+moz-tray-biff  at future period shiny period co period il</span>
+.
+</p>
+
+<script language="JavaScript">
+var spamAddy = document.getElementById('spamAddy');
+spamAddy.removeChild(spamAddy.firstChild);
+spamAddy.appendChild(document.createTextNode("moz-tray" + "-biff" + "\u0040" + "future" + "\u002e" + "shiny" + "\u002e" + "co.il"));
+</script>
+
+<h2>Credits</h2>
+
+<ul>
+<li>Ilya Konstantinov &ndash; code</li>
+<li>Simas Cepaitis &ndash; FreeBSD 5.2 binary</li>
+</ul>
