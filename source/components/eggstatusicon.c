@@ -257,7 +257,8 @@ egg_status_icon_init (EggStatusIcon *status_icon)
 			    G_CALLBACK (egg_status_icon_button_release), status_icon);
 
   status_icon->priv->image = gtk_image_new ();
-  gtk_misc_set_alignment (GTK_MISC (status_icon->priv->image), 0, 0);
+  /* Center the icon */
+  gtk_misc_set_alignment (GTK_MISC (status_icon->priv->image), 0.5, 0.5);
   gtk_container_add (GTK_CONTAINER (status_icon->priv->tray_icon),
 		     status_icon->priv->image);
 
