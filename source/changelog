@@ -8,6 +8,10 @@
 	* Allowed compilation on 64-bit platforms.
 	* Added support for the New Mail led on ASUS computers
 	  (Linux-specific).
+	* Fixed a bug which made the Settings dialog fail to display
+	  on non-US releases of Thunderbird and Suite. Those releases
+	  know nothing about the en-US locale and therefore the
+	  locale definition in chrome.rdf should be more detailed.
 
 1.0.7 (2004-12-31):
 
