@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!DOCTYPE overlay [
+<!ENTITY % prefsOverlayDTD SYSTEM "chrome://traybiff/locale/prefsOverlay.dtd" >
+%prefsOverlayDTD;
+]>
+
+<overlay id="prefsOverlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+	<script type="application/x-javascript" id="sonuvabitch">
+	<![CDATA[
+		_elementIDs.push("newMailNotificationShowIcon");
+	]]>
+	</script>
+
+	<!-- tray icon toggle -->
+	<groupbox id="newMessagesArrivePrefs">
+		<vbox align="start">
+			<checkbox id="newMailNotificationShowIcon" label="&newMailNotificationShowIcon.label;" pref="true" preftype="bool" prefstring="mail.biff.show_icon" prefattribute="checked"/>
+		</vbox>
+	</groupbox>
+
+</overlay>         

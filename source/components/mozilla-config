@@ -1,0 +1,50 @@
+#!/usr/bin/perl
+use Getopt::Long;
+
+my $cflags;
+my $libs;
+my $include_path = $ENV{'MOZILLA_INCLUDE_PATH'};
+my $lib_prefix;
+my $util_prefix;
+my $mozilla_config = "mozilla-config";
+my $mozilla_config_prefix = $ENV{'MOZILLA_CONFIG_PREFIX'};
+$mozilla_config = "$mozilla_config_prefix/$mozilla_config"
+	if ($mozilla_config_prefix);
+
+GetOptions(
+	"cflags" => \$cflags,
+	"libs=s" => \$libs,
+	"lib-prefix" => \$lib_prefix,
+	"util-prefix" => \$util_prefix
+);
+
+if ($libs)
+{
+	system("$mozilla_config --libs $libs");
+}
+
+if ($cflags)
+{
+	if (!$include_path)
+	{
+		$cflags = `$mozilla_config --cflags`;
+		chomp $cflags;
+		$cflags =~ /^-I(.*?)\s/
+			or die "Could not retrieve include path.\n";
+		$include_path = $1;
+	}
+	my @component_paths = glob("$include_path/*/");
+	push(@component_paths, $include_path);
+	print join(' ', map { s{/$}{}; "-I$_"; } @component_paths);
+}
+
+if ($util_prefix || $lib_prefix)
+{
+	$libs = `$mozilla_config --libs`;
+	chomp $libs;
+	
+	if ($libs =~ /^-L(.*?)(\s|$)/)
+	{
+		print $1;
+	}
+}

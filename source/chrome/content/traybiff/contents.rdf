@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+
+<RDF:RDF xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:chrome="http://www.mozilla.org/rdf/chrome#">
+
+	<RDF:Seq about="urn:mozilla:package:root">
+		<RDF:li resource="urn:mozilla:package:traybiff"/>
+	</RDF:Seq>
+
+	<RDF:Description about="urn:mozilla:package:traybiff"
+		chrome:displayName="New Mail Icon"
+		chrome:author="Ilya Konstantinov"
+		chrome:name="traybiff"
+		chrome:extension="true"
+		chrome:authorURL="http://toast.unwind.co.il/code/moztraybiff/"
+		chrome:settingsURL="chrome://traybiff/content/settings.xul"
+		chrome:description="Displays an icon in the system tray when new mail arrives.">
+		chrome:localeVersion="1.0.4">
+	</RDF:Description>
+
+	<RDF:Seq about="urn:mozilla:overlays">
+		<RDF:li resource="chrome://messenger/content/pref-notifications.xul"/>
+	</RDF:Seq>
+
+	<RDF:Seq about="chrome://messenger/content/pref-notifications.xul">
+		<RDF:li>chrome://traybiff/content/prefsOverlay.xul</RDF:li>
+	</RDF:Seq>
+
+</RDF:RDF>

@@ -1,0 +1,32 @@
+Mozilla New Mail Icon ("Biff") extension
+
+VERSION: 1.0.4
+AUTHOR: Ilya Konstantinov
+LICENSE: Unclear at this point. Includes code from libegg and Mozilla. Might be illegal.
+
+This Mozilla extension makes Mozilla Mail and Thunderbird display an icon in the system tray
+when new mail arrives. It supports the standard (FreeDesktop.org) system tray, as used by GNOME,
+KDE and IceWM (with 'icewmtray').
+
+Compilation:
+1. Run 'make'. 
+   
+   Note:
+
+   * If your Mozilla includes are located in a different directory than moz-config
+   indicates (e.g. in your Mozilla build directory), set it in the MOZILLA_INCLUDE_PATH
+   environment variable. This can be handy to compile mozBiff with a private build
+   of Mozilla.
+   
+   * To build a version for Mozilla Nightlies ('trunk branch'), run:
+
+     make MOZ_TRUNK=1
+
+Installation:
+1. In Mozilla Suite:
+   Open the biff.xpi file in Mozilla Suite.
+   In Mozilla Thunderbird:
+   Use the Extension Manager (available via 'Tools | Install Extension' menu option)
+   to install biff.xpi.
+
+Share and enjoy!

@@ -1,0 +1,19 @@
+1.0.4 (2004-08-21):
+
+	* Fix installation on Mozilla Suite.
+	* Add a proper transparency mask to the tray icon and make it centered.
+	* Rename project to better indicate its functionality.
+
+1.0.3 (2004-07-03):
+
+	* Update to install on Mozilla Thunderbird 0.7 new extension manager.
+	  
+1.0.2 (2004-05-26):
+
+	* Update for changes in Mozilla Thunderbird 0.6 / Mozilla 1.7.
+	  (See bug 226270.)
+
+1.0.1 (2004-02-14):
+
+	* Update for changes in Mozilla Thunderbird 0.4.
+	  (Works with Thunderbird 0.5 and Mozilla 1.6 as well.)
