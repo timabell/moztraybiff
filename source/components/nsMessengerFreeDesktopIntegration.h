@@ -85,7 +85,7 @@ private:
   void AddBiffIcon();
   void RemoveBiffIcon();
   nsresult GetFirstFolderWithNewMail(char ** aFolderURI, char ** aMessageURI);
-  nsresult GetStringBundle(nsIStringBundle **aBundle);
+  nsresult GetStringBundle(const char* src, nsIStringBundle **aBundle);
 
 private:
   nsCOMPtr <nsIPrefBranch> mPrefBranch;

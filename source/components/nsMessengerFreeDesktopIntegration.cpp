@@ -74,6 +74,10 @@
 // Prefs in use
 const char* PREF_BIFF_SHOW_ICON = "mail.biff.show_icon";
 
+// String bundles
+const char* STRING_BUNDLE_MESSENGER = "chrome://messenger/locale/messenger.properties";
+const char* STRING_BUNDLE_TRAYBIFF = "chrome://traybiff/locale/traybiff.properties";
+
 // Useful for debugging.
 inline void PrintAtom(nsIAtom* atom)
 {
@@ -277,14 +281,14 @@ nsMessengerFreeDesktopIntegration::OnItemRemoved
   return NS_OK;
 }
 
-nsresult nsMessengerFreeDesktopIntegration::GetStringBundle(nsIStringBundle **aBundle)
+nsresult nsMessengerFreeDesktopIntegration::GetStringBundle(const char* src, nsIStringBundle **aBundle)
 {
   nsresult rv = NS_OK;
   NS_ENSURE_ARG_POINTER(aBundle);
   nsCOMPtr<nsIStringBundleService> bundleService = do_GetService(NS_STRINGBUNDLE_CONTRACTID, &rv);
   nsCOMPtr<nsIStringBundle> bundle;
   if (bundleService && NS_SUCCEEDED(rv))
-    bundleService->CreateBundle("chrome://messenger/locale/messenger.properties", getter_AddRefs(bundle));
+    bundleService->CreateBundle(src, getter_AddRefs(bundle));
   NS_IF_ADDREF(*aBundle = bundle);
   return rv;
 }
@@ -319,7 +323,7 @@ void nsMessengerFreeDesktopIntegration::FillToolTipInfo()
   } // for each folder
  
   nsCOMPtr<nsIStringBundle> bundle; 
-  GetStringBundle(getter_AddRefs(bundle));
+  GetStringBundle(STRING_BUNDLE_MESSENGER, getter_AddRefs(bundle));
   if (bundle)
   { 
     nsAutoString numNewMsgsText;     
@@ -447,14 +451,28 @@ void nsMessengerFreeDesktopIntegration::OnBiffIconPopupMenu(unsigned int button,
   if (mTrayMenu == NULL)
   {
      mTrayMenu = gtk_menu_new();
-
      GtkWidget *entry;
 
-     entry = gtk_menu_item_new_with_label("Read mail...");
+     // Default values for menu item strings
+     nsXPIDLString menuItemReadMail;
+     menuItemReadMail.Assign(NS_LITERAL_STRING("Read mail..."));
+     nsXPIDLString menuItemHide;
+     menuItemHide.Assign(NS_LITERAL_STRING("Hide"));
+
+     // Retrieve menu item localizations from the string bundle, if possible
+     nsCOMPtr<nsIStringBundle> bundle; 
+     GetStringBundle(STRING_BUNDLE_TRAYBIFF, getter_AddRefs(bundle));
+     if (bundle)
+     { 
+       bundle->GetStringFromName(NS_LITERAL_STRING("trayMenu_ReadMail").get(), getter_Copies(menuItemReadMail));
+       bundle->GetStringFromName(NS_LITERAL_STRING("trayMenu_Hide").get(), getter_Copies(menuItemHide));
+     }
+
+     entry = gtk_menu_item_new_with_label(NS_ConvertUTF16toUTF8(menuItemReadMail).get());
      g_signal_connect(G_OBJECT(entry), "activate", G_CALLBACK(TrayIconActivate), this);
      gtk_menu_shell_append(GTK_MENU_SHELL(mTrayMenu), entry);
 
-     entry = gtk_menu_item_new_with_label("Hide");
+     entry = gtk_menu_item_new_with_label(NS_ConvertUTF16toUTF8(menuItemHide).get());
      g_signal_connect(G_OBJECT(entry), "activate", G_CALLBACK(TrayIconHide), this);
      gtk_menu_shell_append(GTK_MENU_SHELL(mTrayMenu), entry);
  
