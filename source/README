@@ -17,9 +17,9 @@ Compilation:
    
    Notes:
 
-   * If your Mozilla includes are located in a different directory than moz-config
+   * If your Mozilla includes are located in a different directory than mozilla-config
    indicates (e.g. in your Mozilla build directory), set it in the MOZILLA_INCLUDE_PATH
-   environment variable. This can be handy to compile mozBiff with a private build
+   environment variable. This can be handy to compile the extension with a private build
    of Mozilla.
    
    * To build a version for Mozilla Nightlies ('trunk branch'), run:
