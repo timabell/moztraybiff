@@ -46,7 +46,7 @@ testsystray: testsystray.c eggtrayicon.o eggstatusicon.o eggmarshalers.o
 	${CC} ${GTK_CFLAGS} ${GTK_LDFLAGS} ${CFLAGS} $^ -o $@
 
 ${COMPONENT_NAME}.so: trayBiffModule.o nsMessengerFreeDesktopIntegration.o eggtrayicon.o eggstatusicon.o eggmarshalers.o
-	if [ -e $@ ]; then \
+	if [ -f $@ ]; then \
 		rm $@; \
 	fi
 	${CXX} ${MOZ_LDFLAGS} ${GTK_LDFLAGS} -shared -o $@ $^
