@@ -33,6 +33,8 @@ try
 	// Add the XPCOM component
 	var componentsPath = getFolder("Components");
         ensure_success( addFile(null, APP_VERSION, "components/libtraybiff.so", componentsPath, "") );
+	var oldComponentFile = getFolder(componentsPath, "mozFreeDesktopIntegration.so");
+	File.remove(oldComponentFile);
 	
 	// Add the chrome
 	var isProfile = false; 	// Cannot XPCOM components to profile anyway...
@@ -47,6 +49,7 @@ try
 		chromeFolder = getFolder("chrome");
 	}
 	ensure_success( addFile(null, APP_VERSION, "chrome/tray-biff.jar", chromeFolder, "") );
+	File.remove( getFolder(chromeFolder, "mozFreeDesktopIntegration.jar") );
 	var regSource = getFolder(chromeFolder, "tray-biff.jar");
 	ensure_success( registerChrome(PACKAGE | regFlag, regSource, "content/" + APP_NAME + "/") );
 	for (var i = 0; i < APP_LOCALES.length; ++i)
