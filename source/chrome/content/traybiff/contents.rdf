@@ -15,7 +15,7 @@
 		chrome:authorURL="http://moztraybiff.mozdev.org/"
 		chrome:settingsURL="chrome://traybiff/content/settings.xul"
 		chrome:description="Displays an icon in the system tray when new mail arrives.">
-		chrome:localeVersion="1.0.4">
+		chrome:localeVersion="1.0.5">
 	</RDF:Description>
 
 	<RDF:Seq about="urn:mozilla:overlays">

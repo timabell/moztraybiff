@@ -1,3 +1,13 @@
+1.0.5 (2004-09-19):
+
+	* Update to work on Thunderbird 0.8.
+	* Update the libegg tray code to alpha-blend with the desktop
+	  theme. For more info:
+	  http://bugzilla.gnome.org/show_bug.cgi?id=150726
+	* Icon changed to:
+	  mail/base/skin/icons/message-mail-new.png
+	  and now embedded as a PNG.
+
 1.0.4 (2004-08-21):
 
 	* Fix installation on Mozilla Suite.

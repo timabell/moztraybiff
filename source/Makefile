@@ -1,7 +1,7 @@
 SUBDIRS = components chrome
 # PLATFORM = `gcc -dumpmachine`
 .PHONY: all clean subdirs ${SUBDIRS} content locale
-XPI_NAME = mozTrayBiff-1.0.4
+XPI_NAME = mozTrayBiff-1.0.5
 
 export DEBUG MOZ_TRUNK
 

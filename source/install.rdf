@@ -2,20 +2,20 @@
 <RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:em="http://www.mozilla.org/2004/em-rdf#">
 	<Description about="urn:mozilla:install-manifest">
 		<em:id>{2e1b75f1-6b5a-4f1d-89b4-424f636e4fba}</em:id>
-		<em:version>1.0.4</em:version>
+		<em:version>1.0.5</em:version>
 		<em:targetApplication>
 			<Description>
 				<em:id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</em:id>
-				<em:minVersion>0.7</em:minVersion>
-				<em:maxVersion>0.7.9</em:maxVersion>
+				<em:minVersion>0.8</em:minVersion>
+				<em:maxVersion>0.8</em:maxVersion>
 			</Description>
 		</em:targetApplication>
 		<em:name>New Mail Icon</em:name>
 		<em:description>Displays an icon in the system tray when new mail arrives.</em:description>
 		<em:creator>Ilya Konstantinov</em:creator>
-		<em:homepageURL>http://toast.unwind.co.il/code/moztraybiff/</em:homepageURL>
+		<em:homepageURL>http://moztraybiff.mozdev.org/</em:homepageURL>
 		<em:optionsURL>chrome://traybiff/content/settings.xul</em:optionsURL>
-		<em:updateURL>http://toast.unwind.co.il/code/moztraybiff/update.rdf</em:updateURL>
+		<em:updateURL>http://moztraybiff.mozdev.org/update.rdf</em:updateURL>
 		<em:file>
 			<Description about="urn:mozilla:extension:file:tray-biff.jar">
 				<em:package>content/traybiff/</em:package>
