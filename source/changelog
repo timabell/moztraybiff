@@ -1,12 +1,14 @@
-1.0.5 (2004-09-19):
+1.0.5 (2004-10-01):
 
-	* Update to work on Thunderbird 0.8.
-	* Update the libegg tray code to alpha-blend with the desktop
+	* Updated to work on Thunderbird 0.8.
+	* The build process now supports building separate XPIs for Suite
+	  and for Thunderbird.
+	* Improved the libegg tray code to alpha-blend with the desktop
 	  theme. For more info:
 	  http://bugzilla.gnome.org/show_bug.cgi?id=150726
 	* Icon changed to:
 	  mail/base/skin/icons/message-mail-new.png
-	  and now embedded as a PNG.
+	  and now embedded as a PNG with translucency.
 
 1.0.4 (2004-08-21):
 

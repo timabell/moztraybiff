@@ -2,21 +2,22 @@ SHELL = /bin/sh
 
 .PHONY: clean all
 
-MOZILLA_LIB_PREFIX = `./mozilla-config --lib-prefix`
-MOZILLA_UTIL_PREFIX = `./mozilla-config --util-prefix`
+MOZILLA_CONFIG = ./mozilla-config --real-config $(REAL_CONFIG)
+MOZILLA_LIB_PREFIX = $(shell $(MOZILLA_CONFIG) --lib-prefix)
+MOZILLA_UTIL_PREFIX = $(shell $(MOZILLA_CONFIG) --util-prefix}
 
 COMPONENT_NAME = libtraybiff
 
 GTK_PACKAGE = gtk+-2.0
 
-GTK_CFLAGS = \
-	`pkg-config --cflags $(GTK_PACKAGE)`
+GTK_CFLAGS := \
+	$(shell pkg-config --cflags $(GTK_PACKAGE))
 
-GTK_LDFLAGS = \
-	`pkg-config --libs $(GTK_PACKAGE)`
+GTK_LDFLAGS := \
+	$(shell pkg-config --libs $(GTK_PACKAGE))
 
-MOZ_INCLUDES = \
-	`./mozilla-config --cflags`
+MOZ_INCLUDES := \
+	$(shell $(MOZILLA_CONFIG) --cflags)
 
 CXXFLAGS += \
 	-fno-rtti \
@@ -36,8 +37,8 @@ ifdef MOZ_TRUNK
 	CFLAGS += -DMOZ_TRUNK
 endif
 
-MOZ_LDFLAGS += \
-	`./mozilla-config --libs xpcom`
+MOZ_LDFLAGS := \
+	$(shell $(MOZILLA_CONFIG) --libs xpcom)
 
 all: ${COMPONENT_NAME}.so
 

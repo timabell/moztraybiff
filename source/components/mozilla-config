@@ -6,17 +6,23 @@ my $libs;
 my $include_path = $ENV{'MOZILLA_INCLUDE_PATH'};
 my $lib_prefix;
 my $util_prefix;
-my $mozilla_config = "mozilla-config";
-my $mozilla_config_prefix = $ENV{'MOZILLA_CONFIG_PREFIX'};
-$mozilla_config = "$mozilla_config_prefix/$mozilla_config"
-	if ($mozilla_config_prefix);
+my $mozilla_config_bin;
 
 GetOptions(
 	"cflags" => \$cflags,
 	"libs=s" => \$libs,
 	"lib-prefix" => \$lib_prefix,
-	"util-prefix" => \$util_prefix
+	"util-prefix" => \$util_prefix,
+	"real-config=s" => \$mozilla_config_bin,
 );
+
+$mozilla_config_bin = "mozilla-config"
+	if (!$mozilla_config_bin);
+my $mozilla_config_prefix = $ENV{'MOZILLA_CONFIG_PREFIX'};
+$mozilla_config = 
+	$mozilla_config_prefix ?
+		"$mozilla_config_prefix/$mozilla_config_bin" :
+		$mozilla_config_bin;
 
 if ($libs)
 {

@@ -1,14 +1,37 @@
 SUBDIRS = components chrome
-# PLATFORM = `gcc -dumpmachine`
 .PHONY: all clean subdirs ${SUBDIRS} content locale
-XPI_NAME = mozTrayBiff-1.0.5
+VERSION = 1.0.5
+PLATFORM := $(shell gcc -dumpmachine)
+XPI_NAME = mozTrayBiff
+XPI_VERSION := $(VERSION)-$(PLATFORM)
+XPI_FILENAME = $(XPI_NAME)-$(XPI_VERSION).xpi
 
-export DEBUG MOZ_TRUNK
+# This can be either 'suite' or 'tbird'
+MOZILLA_PLATFORM = 
 
-all: subdirs ${XPI_NAME}.xpi
+ifeq ($(MOZILLA_PLATFORM),suite)
+REAL_CONFIG = mozilla-config
+XPI_VERSION := $(XPI_VERSION)-moz$(shell $(REAL_CONFIG) --version)
+XPI_EXTRA_FILES = install.js
+endif
+ifeq ($(MOZILLA_PLATFORM),tbird)
+REAL_CONFIG = mozilla-thunderbird-config
+XPI_VERSION := $(XPI_VERSION)-tb$(shell $(REAL_CONFIG) --version)
+XPI_EXTRA_FILES = install.rdf
+endif
+ifeq ($(MOZILLA_PLATFORM),)
+$(error You must specify the target Mozilla platform to build for ('tbird' or 'suite'). e.g. make MOZILLA_PLATFORM=tbird)
+endif
+
+export DEBUG MOZ_TRUNK MOZILLA_PLATFORM REAL_CONFIG
+
+# all:
+# 	echo $(PLATFORM)
+
+all: subdirs ${XPI_FILENAME}
 
 clean:
-	rm ${XPI_NAME}.xpi 2>/dev/null; true
+	[ -e *.xpi ] && rm *.xpi; true
 	[ -e xpi/components ] && rm -rf xpi/components; true
 	for DIR in ${SUBDIRS}; do \
 		${MAKE} -C $$DIR $@; \
@@ -19,11 +42,10 @@ subdirs: ${SUBDIRS}
 ${SUBDIRS}:
 	${MAKE} -C $@
 
-${XPI_NAME}.xpi: subdirs
+${XPI_FILENAME}: subdirs
 	rm -rf $@; \
 	zip $@ \
 		components/libtraybiff.so \
 		chrome/tray-biff.jar \
 		defaults/preferences/tray-biff.js \
-		install.rdf \
-		install.js
+		$(XPI_EXTRA_FILES)

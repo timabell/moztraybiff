@@ -9,9 +9,13 @@ when new mail arrives. It supports the standard (FreeDesktop.org) system tray, a
 KDE and IceWM (with 'icewmtray').
 
 Compilation:
-1. Run 'make'. 
+1. Run:
+    make MOZILLA_PLATFORM=suite
+   to build a version for Mozilla Suite, or:
+    make MOZILLA_PLATFORM=tbird
+   to build a version for Mozilla Thunderbird.
    
-   Note:
+   Notes:
 
    * If your Mozilla includes are located in a different directory than moz-config
    indicates (e.g. in your Mozilla build directory), set it in the MOZILLA_INCLUDE_PATH
@@ -23,10 +27,11 @@ Compilation:
      make MOZ_TRUNK=1
 
 Installation:
-1. In Mozilla Suite:
-   Open the biff.xpi file in Mozilla Suite.
-   In Mozilla Thunderbird:
-   Use the Extension Manager (available via 'Tools | Install Extension' menu option)
-   to install biff.xpi.
+- In Mozilla Suite:
+  Open the XPI file in Mozilla Suite ('File | Open' menu option,
+  or by browsing to it).
+- In Mozilla Thunderbird:
+  Use the Extension Manager (available via 'Tools | Install Extension' menu option)
+  to install the XPI file.
 
 Share and enjoy!
