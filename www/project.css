@@ -18,6 +18,16 @@
   margin-left: 0;
 }
 
+li.faq-question-q
+{
+	font-weight:bold;
+}
+
+li.faq-answer-a
+{
+	font-weight:bold;
+}
+
 ul.releases
 {
 }

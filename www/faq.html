@@ -1,43 +1,49 @@
 <!-- MAIN CONTENT -->
 <h5 class="page-header"><a id="faq" name="content">FAQ</a></h5>
 
-<ul>
+<p>
+<span class="faq-question-q">Q:</span> How do I make the new mail icon appear in KDE?
+</p>
 
-<li>
-Q: How do I make the new mail icon appear in KDE?
-</li>
-<li>
-A: Make sure you have the System Tray in your panel. To add it, right-click the panel and choose <code>Add | Applets | System Tray</code>.
-</li>
+<p>
+<span class="faq-answer-a">A:</span> Make sure you have the System Tray in your panel. To add it, right-click the panel and choose <code>Add | Applets | System Tray</code>.
+</p>
 
-<li>
-Q: How do I make the new mail icon appear in GNOME?
-</li>
-<li>
-A: Make sure you have the Notification Area in your panel. To add it, right-click the panel, choose <code>Add to Panel</code>, select the <code>Notification Area</code> item and click the <code>Add</code> button.
-</li>
+<p>
+<span class="faq-question-q">Q:</span> How do I make the new mail icon appear in GNOME?
+</p>
 
-<li>
-Q: Can you make the icon show all the time, regardless of having new mail, as
+<p>
+<span class="faq-answer-a">A:</span> Make sure you have the Notification Area in your panel. To add it, right-click the panel, choose <code>Add to Panel</code>, select the <code>Notification Area</code> item and click the <code>Add</code> button.
+</p>
+
+<p>
+<span class="faq-question-q">Q:</span> Can you make the icon show all the time, regardless of having new mail, as
 a handy shortcut to bring up Thunderbird?
-</li>
-<li>
-A: This will be against the <a href="http://developer.gnome.org/projects/gup/hig/">GNOME Human Interface Guidelines</a>, which
+</p>
+
+<p>
+<span class="faq-answer-a">A:</span>
+This will be against the <a href="http://developer.gnome.org/projects/gup/hig/">GNOME Human Interface Guidelines</a>, which
 suggests icons should appear <a href="http://developer.gnome.org/projects/gup/hig/">only to alert users of some event</a>. You probably know
 how much those icons clutter the Taskbar on Windows XP machines, and we wouldn't want the same
 to happen on GNOME. That's why I don't want to implement this feature.
+</p>
+
+<p>
 However, it <em>is</em> handy to be able to switch to Thunderbird, whether
 minimized or on a different workspace, so here's what I do: simply place a Thunderbird
 icon on your panel (by dragging it from the Applications menu). Whenever you
 click it, if Thunderbird is already running, it'll maximize.<br>
 <img src="screenshot-thunderbird-panel-icon.png" alt="Screenshot of Thunderbird icon in GNOME panel">
-</li>
+</p>
 
-<li>
-Q: After I install a newer version of the extension (e.g. 1.0.7) and restart Thunderbird, the old version (e.g. 1.0.5) still shows. How can I fix this?
-</li>
-<li>
-A: I am working on resolving this problem. Meanwhile, you can try a workaround:
+<p>
+<span class="faq-question-q">Q:</span> After I install a newer version of the extension (e.g. 1.0.7) and restart Thunderbird, the old version (e.g. 1.0.5) still shows. How can I fix this?
+</p>
+
+<p>
+<span class="faq-answer-a">A:</span> I am working on resolving this problem. Meanwhile, you can try a workaround:
 <ol>
 <li>Shut down Thunderbird.</li>
 <li>Go to your Thunderbird's profile directory (should be in <code>~/.mozilla-thunderbird/.../</code>).</li>
@@ -45,12 +51,14 @@ A: I am working on resolving this problem. Meanwhile, you can try a workaround:
 <li>Delete the <code>{2e1b75f1-6b5a-4f1d-89b4-424f636e4fba}</code> directory and all its contents.</li>
 <li>Start Thunderbird and install the new version of the extension.</li>
 </ol>
-</li>
+</p>
 
-<li>
-Q: Can I avoid being notified about new mail if it is "Junk mail"?
-</li>
-<li>A: This extension does not control the manner in which folders are marked as
+<p>
+<span class="faq-question-q">Q:</span> Can I avoid being notified about new mail if it is "Junk mail"?
+</p>
+
+<p>
+<span class="faq-answer-a">A:</span> This extension does not control the manner in which folders are marked as
 having new mail. It doesn't perform any actions on its own -- it just obeys
 Mozilla's notifications, the same notification that's used to play a sound
 every time new mail is received. Therefore, such requests should not be addressed to me but to Mozilla
@@ -60,6 +68,4 @@ already:
 <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=11040" title="Allow filters to control biff UI (i.e. only notify me of "important" msg)">bug 11040</a>.
 You can increase the likelyhood of those issues being addressed by 'voting'
 for them on the Bugzilla site (see the above links).
-</li>
-
-</ul>
+</p>
