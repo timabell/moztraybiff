@@ -1,10 +1,11 @@
-1.0.8 (?):
+1.0.99 (?):
 
 	* Enabled Hebrew localization.
 	* Added French localization (courtesy of Jérôme Schell).
 	* Added Italian localization (courtesy of Franco Spinelli).
 	* Added Catalan localization (courtesy of Toni Hermoso).
 	* Made the remaining strings (e.g. tray menu) localizable.
+	* Allowed compilation on 64-bit platforms.
 
 1.0.7 (2004-12-31):
 
