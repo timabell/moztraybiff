@@ -19,10 +19,14 @@ GTK_LDFLAGS := \
 MOZ_INCLUDES := \
 	$(shell $(MOZILLA_CONFIG) --cflags)
 
+CFLAGS += \
+	-fPIC
+
 CXXFLAGS += \
 	-fno-rtti \
 	-fno-exceptions \
-	-fshort-wchar
+	-fshort-wchar \
+	-fPIC
 
 ifdef DEBUG
 	CXXFLAGS += -g
