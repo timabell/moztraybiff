@@ -206,10 +206,15 @@ nsMessengerFreeDesktopIntegration::Init()
   NS_ENSURE_SUCCESS(rv,rv);
 
   // because we care about biff notifications
-  nsCOMPtr <nsIMsgAccountManager> accountManager = do_GetService(NS_MSGACCOUNTMANAGER_CONTRACTID, &rv);
+  nsCOMPtr <nsIMsgMailSession> mailSession = do_GetService(NS_MSGMAILSESSION_CONTRACTID, &rv);
   NS_ENSURE_SUCCESS(rv,rv);
-  rv = accountManager->AddRootFolderListener(this);
+  rv = mailSession->AddFolderListener(this, nsIFolderListener::propertyFlagChanged);
   NS_ENSURE_SUCCESS(rv,rv);
+  // In the future, we might want to add more properties here, to enable us to display
+  // the unread message count etc.
+  // For reference, see:
+  // - nsMessengerWinIntegration.cpp
+  // - nsStatusBarBiffManager.cpp
 
   ApplyPrefs();
 
