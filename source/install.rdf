@@ -23,6 +23,7 @@
 				<em:locale>locale/he-IL/traybiff/</em:locale>
 				<em:locale>locale/fr-FR/traybiff/</em:locale>
 				<em:locale>locale/it-IT/traybiff/</em:locale>
+				<em:locale>locale/ca-AD/traybiff/</em:locale>
 			</Description>
 		</em:file>
 	</Description>      

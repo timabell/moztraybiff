@@ -1,8 +1,9 @@
 1.0.8 (?):
 
 	* Enabled Hebrew localization.
-	* Added French localization.
-	* Added Italian localization.
+	* Added French localization (courtesy of Jérôme Schell).
+	* Added Italian localization (courtesy of Franco Spinelli).
+	* Added Catalan localization (courtesy of Toni Hermoso).
 	* Made the remaining strings (e.g. tray menu) localizable.
 
 1.0.7 (2004-12-31):
