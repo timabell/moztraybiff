@@ -6,6 +6,7 @@
 			<RDF:Seq>
 				<RDF:li resource="urn:mozilla:extension:{2e1b75f1-6b5a-4f1d-89b4-424f636e4fba}:1.0.4"/>
 				<RDF:li resource="urn:mozilla:extension:{2e1b75f1-6b5a-4f1d-89b4-424f636e4fba}:1.0.5"/>
+				<RDF:li resource="urn:mozilla:extension:{2e1b75f1-6b5a-4f1d-89b4-424f636e4fba}:1.0.6"/>
 			</RDF:Seq>
 		</em:updates>
 		<em:version>1.0.5</em:version>
@@ -31,7 +32,19 @@
 				<em:id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</em:id>
 				<em:minVersion>0.8</em:minVersion>
 				<em:maxVersion>0.8</em:maxVersion>
-				<em:updateLink>http://downloads.mozdev.org/moztraybiff/mozTrayBiff-1.0.5.xpi</em:updateLink>
+				<em:updateLink>http://downloads.mozdev.org/moztraybiff/mozTrayBiff-1.0.5-i486-linux-tb0.8.xpi</em:updateLink>
+			</Description>
+		</em:targetApplication>
+	</RDF:Description>
+
+	<RDF:Description about="urn:mozilla:extension:{2e1b75f1-6b5a-4f1d-89b4-424f636e4fba}:1.0.6">
+		<em:version>1.0.6</em:version>
+		<em:targetApplication>
+			<Description>
+				<em:id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</em:id>
+				<em:minVersion>0.9</em:minVersion>
+				<em:maxVersion>0.9</em:maxVersion>
+				<em:updateLink>http://downloads.mozdev.org/moztraybiff/mozTrayBiff-1.0.6-i486-linux-tb0.9.xpi</em:updateLink>
 			</Description>
 		</em:targetApplication>
 	</RDF:Description>
