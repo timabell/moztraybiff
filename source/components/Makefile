@@ -50,10 +50,13 @@ ${COMPONENT_NAME}.so: trayBiffModule.o nsMessengerFreeDesktopIntegration.o eggtr
 	fi
 	${CXX} ${MOZ_LDFLAGS} ${GTK_LDFLAGS} -shared -o $@ $^
 
+trayBiffIcon.h: message-mail-new.png
+	gdk-pixbuf-csource --raw --name=tray_biff_icon $< > $@
+
 trayBiffModule.o: trayBiffModule.cpp nsMessengerFreeDesktopIntegration.h
 	${CXX} ${MOZ_INCLUDES} ${GTK_CFLAGS} ${CXXFLAGS} -c $< -o $@
 
-nsMessengerFreeDesktopIntegration.o: nsMessengerFreeDesktopIntegration.cpp nsMessengerFreeDesktopIntegration.h
+nsMessengerFreeDesktopIntegration.o: nsMessengerFreeDesktopIntegration.cpp nsMessengerFreeDesktopIntegration.h trayBiffIcon.h
 	${CXX} ${MOZ_INCLUDES} ${GTK_CFLAGS} ${CXXFLAGS} -c $< -o $@
 
 eggtrayicon.o: eggtrayicon.c eggtrayicon.h

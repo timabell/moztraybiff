@@ -66,10 +66,9 @@
 #include <nsIPrefService.h>
 #include <nsIPrefBranchInternal.h>
 
-// One day, we should use this icon:
-#define NEW_MAIL_ALERT_ICON "chrome://messenger/skin/icons/new-mail-alert.png"
+// One day, we should use an icon from chrome.
 // Meanwhile, we'll embed the icon:
-#include "mozilla_mailnews.xpm"
+#include "trayBiffIcon.h"
 
 // Prefs in use
 const char* PREF_BIFF_SHOW_ICON = "mail.biff.show_icon";
@@ -399,7 +398,7 @@ void nsMessengerFreeDesktopIntegration::AddBiffIcon()
 {
   if (mTrayIcon == NULL)
   {
-     GdkPixbuf* pixbuf = gdk_pixbuf_new_from_xpm_data(xpm_mozilla_mailnews_icon);
+     GdkPixbuf* pixbuf = gdk_pixbuf_new_from_inline(-1, tray_biff_icon, FALSE, NULL);
      // This should be ideally replaced by a completely libpr0n-based icon rendering.
      mTrayIcon = egg_status_icon_new_from_pixbuf(pixbuf);
      g_signal_connect(G_OBJECT(mTrayIcon), "activate", G_CALLBACK(TrayIconActivate), this);
