@@ -18,6 +18,15 @@
   margin-left: 0;
 }
 
+ul.releases
+{
+}
+
+ul.releases > li
+{
+	font-weight:bold;
+}
+
 dl.release-defs
 {
 	padding-left:20px;
