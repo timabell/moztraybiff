@@ -84,7 +84,7 @@ private:
   void SetToolTipString(const PRUnichar * aToolTipString);
   void AddBiffIcon();
   void RemoveBiffIcon();
-  nsresult GetFirstFolderWithNewMail(char ** aFolderURI);
+  nsresult GetFirstFolderWithNewMail(char ** aFolderURI, char ** aMessageURI);
   nsresult GetStringBundle(nsIStringBundle **aBundle);
 
 private:

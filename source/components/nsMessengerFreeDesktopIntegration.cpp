@@ -46,6 +46,7 @@
 #include <nsIMsgAccount.h>
 #include <nsIRDFResource.h>
 #include <nsIMsgFolder.h>
+#include <nsIMsgHdr.h>
 #include <nsMsgBaseCID.h>
 #include <nsMsgFolderFlags.h>
 #include <nsIProfile.h>
@@ -87,7 +88,7 @@ inline void PrintAtom(nsIAtom* atom)
 // Refer to mail/base/content/mailCore.js : toMessengerWindow() to see
 // how we raise the mailer window.
 
-static void openMailWindow(const PRUnichar * aMailWindowName, const char * aFolderUri)
+static void openMailWindow(const PRUnichar * aMailWindowName, const char * aFolderUri, const char * aMessageUri)
 {
   nsCOMPtr<nsIWindowMediator> mediator ( do_GetService(NS_WINDOWMEDIATOR_CONTRACTID) );
   if (mediator)
@@ -103,7 +104,10 @@ static void openMailWindow(const PRUnichar * aMailWindowName, const char * aFold
         piDOMWindow->GetObjectProperty(NS_LITERAL_STRING("MsgWindowCommands").get(), getter_AddRefs(xpConnectObj));
         nsCOMPtr<nsIMsgWindowCommands> msgWindowCommands = do_QueryInterface(xpConnectObj);
         if (msgWindowCommands)
+        {
           msgWindowCommands->SelectFolder(aFolderUri);
+          msgWindowCommands->SelectMessage(aMessageUri);
+        }
       }
 
       // TODO: Original Win32 code tried to restore minimized window and move
@@ -335,7 +339,7 @@ void nsMessengerFreeDesktopIntegration::FillToolTipInfo()
 
 // get the first top level folder which we know has new mail, then enumerate over all the subfolders
 // looking for the first real folder with new mail. Return the folderURI for that folder.
-nsresult nsMessengerFreeDesktopIntegration::GetFirstFolderWithNewMail(char ** aFolderURI)
+nsresult nsMessengerFreeDesktopIntegration::GetFirstFolderWithNewMail(char ** aFolderURI, char ** aMessageURI)
 {
   nsresult rv;
   NS_ENSURE_TRUE(mFoldersWithNewMail, NS_ERROR_FAILURE); 
@@ -359,6 +363,7 @@ nsresult nsMessengerFreeDesktopIntegration::GetFirstFolderWithNewMail(char ** aF
   {
     PRUint32 biffState = nsIMsgFolder::nsMsgBiffState_NoMail; 
     nsCOMPtr<nsIMsgFolder> msgFolder;
+    nsString msgURI;
     // enumerate over the folders under this root folder till we find one with new mail....
     nsCOMPtr<nsISupportsArray> allFolders;
     NS_NewISupportsArray(getter_AddRefs(allFolders));
@@ -381,8 +386,13 @@ nsresult nsMessengerFreeDesktopIntegration::GetFirstFolderWithNewMail(char ** aF
           {
             numNewMessages = 0;   
             msgFolder->GetNumNewMessages(PR_FALSE, &numNewMessages);
-            if (numNewMessages)
+            if (numNewMessages > 0)
+            {
+              nsCOMPtr<nsIMsgDBHdr> msgHeader;
+              msgFolder->GetFirstNewMessage(getter_AddRefs(msgHeader));
+              msgFolder->GetUriForMsg(msgHeader, aMessageURI);
               break; // kick out of the while loop
+            }
             more = enumerator->Next();
           }
         } // if we have a folder
@@ -420,10 +430,10 @@ void nsMessengerFreeDesktopIntegration::RemoveBiffIcon()
 
 void nsMessengerFreeDesktopIntegration::OnBiffIconActivate()
 {
-  nsXPIDLCString folderURI;
-  GetFirstFolderWithNewMail(getter_Copies(folderURI));
+  nsXPIDLCString folderURI, messageURI;
+  GetFirstFolderWithNewMail(getter_Copies(folderURI), getter_Copies(messageURI));
 
-  openMailWindow(NS_LITERAL_STRING("mail:3pane").get(), folderURI /* or nsnull in original code */);
+  openMailWindow(NS_LITERAL_STRING("mail:3pane").get(), folderURI, messageURI);
 }
 
 void nsMessengerFreeDesktopIntegration::OnBiffIconPopupMenu(unsigned int button, unsigned int activateTime)
