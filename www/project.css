@@ -1,5 +1,14 @@
 @import url("http://www.mozdev.org/project.css");
 
+#main-content-no-nav ul,
+#main-content ul {
+  list-style-type: square;
+  list-style-image: url(http://www.mozdev.org/sharedimages/bullet.gif);
+  list-style-position: outside;
+  padding-left: 0;
+  margin-left: 0;
+}
+
 #main-content-no-nav ol,
 #main-content ol {
   list-style-type: decimal;
