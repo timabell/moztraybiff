@@ -18,12 +18,12 @@
   margin-left: 0;
 }
 
-li.faq-question-q
+.faq-question-q
 {
 	font-weight:bold;
 }
 
-li.faq-answer-a
+.faq-answer-a
 {
 	font-weight:bold;
 }
@@ -46,5 +46,7 @@ dl.release-defs
 
 img.screenshot
 {
+	margin:3px;
+	padding:2px;
 	border:1px solid black;
 }
