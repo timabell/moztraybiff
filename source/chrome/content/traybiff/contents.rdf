@@ -16,12 +16,26 @@
 		chrome:settingsURL="chrome://traybiff/content/settings.xul"
 		chrome:description="Displays an icon in the system tray when new mail arrives.">
 		chrome:localeVersion="1.0.7">
+		<chrome:uninstallInfo>
+			<RDF:Seq>
+				<RDF:li>ComsD:libtraybiff.so</RDF:li>
+				<RDF:li>AChrom:tray-biff.jar</RDF:li>
+				<RDF:li>PrfDef:tray-biff.js</RDF:li>
+			</RDF:Seq>
+		</chrome:uninstallInfo>
 	</RDF:Description>
 
 	<RDF:Seq about="urn:mozilla:overlays">
 		<RDF:li resource="chrome://messenger/content/pref-notifications.xul"/>
+		<RDF:li resource="chrome://messenger/content/mailWindowOverlay.xul"/>
+	</RDF:Seq>
+	
+	<!-- Overlay to facilitate initialization hooks in Suite / TBird -->
+	<RDF:Seq about="chrome://messenger/content/mailWindowOverlay.xul">
+		<RDF:li>chrome://traybiff/content/initOverlay.xul</RDF:li>
 	</RDF:Seq>
 
+	<!-- Integrate into Suite's Preferences | Notifications -->
 	<RDF:Seq about="chrome://messenger/content/pref-notifications.xul">
 		<RDF:li>chrome://traybiff/content/prefsOverlay.xul</RDF:li>
 	</RDF:Seq>
