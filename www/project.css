@@ -43,3 +43,8 @@ dl.release-defs
 	padding-left:20px;
 	padding-bottom:20px;
 }
+
+img.screenshot
+{
+	border:1px solid black;
+}
