@@ -2,7 +2,6 @@
 
 #main-content-no-nav ol,
 #main-content ol {
-  list-style-type: decimal;
   list-style-position: inside;
   padding-left: 0;
   margin-left: 0;
