@@ -4,7 +4,7 @@
 #main-content ul {
   list-style-type: square;
   list-style-image: url(http://www.mozdev.org/sharedimages/bullet.gif);
-  list-style-position: outside;
+  list-style-position: inside;
   padding-left: 0;
   margin-left: 0;
 }
@@ -13,7 +13,7 @@
 #main-content ol {
   list-style-type: decimal;
   list-style-image: none;
-  list-style-position: outside;
+  list-style-position: inside;
   padding-left: 0;
   margin-left: 0;
 }
