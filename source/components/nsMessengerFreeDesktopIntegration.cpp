@@ -224,6 +224,8 @@ nsMessengerFreeDesktopIntegration::Observe(nsISupports *aSubject, const char *aT
      if (prefName.Equals(PREF_BIFF_SHOW_ICON))
         ApplyPrefs();
   }
+  
+  return NS_OK;
 }
 
 void nsMessengerFreeDesktopIntegration::ApplyPrefs()
