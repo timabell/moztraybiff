@@ -22,8 +22,14 @@ ul.releases
 {
 }
 
+.release-version
+{
+	font-weight:bold;
+}
+
 dl.release-defs
 {
+	padding-top:20px;
 	padding-left:20px;
 	padding-bottom:20px;
 }
