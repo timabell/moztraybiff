@@ -20,6 +20,7 @@
 			<Description about="urn:mozilla:extension:file:tray-biff.jar">
 				<em:package>content/traybiff/</em:package>
 				<em:locale>locale/en-US/traybiff/</em:locale>
+				<em:locale>locale/he-IL/traybiff/</em:locale>
 				<em:locale>locale/fr-FR/traybiff/</em:locale>
 			</Description>
 		</em:file>
