@@ -1,3 +1,10 @@
+1.0.7 (2004-12-31):
+
+	* Compiled for Thunderbird 1.0.
+	* Ensure we catch 'biff' events from all accounts (by
+	  using exactly the same method as Mozilla's "beep"
+	  notification uses).
+	  
 1.0.6 (2004-11-19):
 
 	* Updated as compatible with Thunderbird 0.9.
