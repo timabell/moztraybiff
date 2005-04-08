@@ -42,7 +42,7 @@ if ($cflags)
 	{
 		$cflags = `$mozilla_config --cflags`;
 		chomp $cflags;
-		$cflags =~ /^-I(.*?)\s/
+		$cflags =~ /^-I(.*?)(\s|$)/
 			or die "Could not retrieve include path.\n";
 		$include_path = $1;
 	}
