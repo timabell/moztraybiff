@@ -1,0 +1,4 @@
+<!ENTITY dialog.title "Ícono de Nuevo Mensaje">
+<!ENTITY features.caption  "Características">
+<!ENTITY showTrayIconForNewMessages.label  "Mostrar ícono cuando arriven nuevos mensajes">
+<!ENTITY showAsusLedForNewMessages.label  "Encender el LED de nuevo mensaje en computadores ASUS cuando arriven nuevos mensajes">

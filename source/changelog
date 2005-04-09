@@ -4,6 +4,7 @@
 	* Added French localization (courtesy of Jérôme Schell).
 	* Added Italian localization (courtesy of Franco Spinelli).
 	* Added Catalan localization (courtesy of Toni Hermoso).
+	* Added Spanish localization (courtesy of Pat Carr).
 	* Made the remaining strings (e.g. tray menu) localizable.
 	* Allowed compilation on 64-bit platforms.
 	* Added support for the New Mail led on ASUS computers
