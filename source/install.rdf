@@ -24,6 +24,8 @@
 				<em:locale>locale/fr-FR/traybiff/</em:locale>
 				<em:locale>locale/it-IT/traybiff/</em:locale>
 				<em:locale>locale/ca-AD/traybiff/</em:locale>
+				<em:locale>locale/de-DE/traybiff/</em:locale>
+				<em:locale>locale/es-ES/traybiff/</em:locale>
 			</Description>
 		</em:file>
 	</Description>      
