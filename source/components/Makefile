@@ -13,9 +13,8 @@ MOZILLA_UTIL_PREFIX := \
 	$(shell $(MOZILLA_CONFIG) --util-prefix)
 
 # This doesn't work, so we'll hardcode for now:
-# MOZILLA_IDLFLAGS := \
-# 	$(shell $(MOZILLA_CONFIG) --idlflags)
-MOZILLA_IDLFLAGS := -I/usr/share/idl/mozilla
+MOZILLA_IDLFLAGS := \
+	$(shell $(MOZILLA_CONFIG) --idlflags)
 
 COMPONENT_NAME = libtraybiff
 

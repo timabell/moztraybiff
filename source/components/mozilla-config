@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+use strict;
 use Getopt::Long;
 
 my $cflags;
@@ -6,7 +7,7 @@ my $libs;
 my $include_path = $ENV{'MOZILLA_INCLUDE_PATH'};
 my $lib_prefix;
 my $util_prefix;
-my $idl_flags;
+my $idlflags;
 my $mozilla_config_bin;
 
 GetOptions(
@@ -14,14 +15,14 @@ GetOptions(
 	"libs=s" => \$libs,
 	"lib-prefix" => \$lib_prefix,
 	"util-prefix" => \$util_prefix,
+	"idlflags" => \$idlflags,
 	"real-config=s" => \$mozilla_config_bin,
-	"idlflags" => \$idl_flags
 );
 
 $mozilla_config_bin = "mozilla-config"
 	if (!$mozilla_config_bin);
 my $mozilla_config_prefix = $ENV{'MOZILLA_CONFIG_PREFIX'};
-$mozilla_config = 
+my $mozilla_config = 
 	$mozilla_config_prefix ?
 		"$mozilla_config_prefix/$mozilla_config_bin" :
 		$mozilla_config_bin;
@@ -31,9 +32,17 @@ if ($libs)
 	system("$mozilla_config", "--libs" => $libs);
 }
 
-if ($idl_flags)
+if ($idlflags)
 {
-	system($mozilla_config, "--idlflags");
+	my $libs = `$mozilla_config --libs`;
+	chomp $libs;
+	$libs =~ m{.*/(.*)$};
+	my $PRODUCT_NAME = $1;
+	
+	$idlflags = `$mozilla_config --idlflags`;
+	chomp $idlflags;
+	$idlflags =~ s(%{idldir})(/usr/share/idl/$PRODUCT_NAME);
+	print $idlflags;
 }
 
 if ($cflags)
