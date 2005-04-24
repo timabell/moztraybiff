@@ -1,10 +1,11 @@
-1.0.99 (?):
+1.1 (2005-04-24):
 
 	* Enabled Hebrew localization.
 	* Added French localization (courtesy of Jérôme Schell).
 	* Added Italian localization (courtesy of Franco Spinelli).
 	* Added Catalan localization (courtesy of Toni Hermoso).
 	* Added Spanish localization (courtesy of Pat Carr).
+	* Added German localization (courtesy of Christoph Vogelbusch).
 	* Made the remaining strings (e.g. tray menu) localizable.
 	* Allowed compilation on 64-bit platforms.
 	* Added support for the New Mail led on ASUS computers
