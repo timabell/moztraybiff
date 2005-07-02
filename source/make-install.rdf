@@ -1,0 +1,37 @@
+#!/usr/bin/perl
+
+my $machine = `gcc -dumpmachine`;
+chomp $machine;
+
+$machine =~ /^(.*?)\-/
+	or die "Unable to parse machine name";
+my $arch = $1;
+
+# Use a different UUID for each architecture so we could differentiate
+# the architectures in install.rdf.
+my $uuid;
+if ($arch =~ /^i(3|4|5|6)86$/)
+{
+	$uuid = "2e1b75f1-6b5a-4f1d-89b4-424f636e4fba";
+}
+elsif ($arch =~ /^x86_64$/)
+{
+	$uuid = "f93e7024-eb08-11d9-8a5e-000feab94cf7";
+}
+else
+{
+	$uuid = "ecc6331e-eb07-11d9-bd1e-000feab94cf7";
+}
+
+open(IN, "<install.rdf.in")
+	or die $!;
+open(OUT, ">install.rdf")
+	or die $!;
+while(<IN>)
+{
+	s/%uuid%/$uuid/g;
+	print(OUT)
+		or die $!;
+}
+close(IN);
+close(OUT);

@@ -25,9 +25,6 @@ endif
 
 export DEBUG MOZ_TRUNK MOZILLA_PLATFORM REAL_CONFIG
 
-# all:
-# 	echo $(PLATFORM)
-
 all: subdirs ${XPI_FILENAME}
 
 clean:
@@ -42,7 +39,10 @@ subdirs: ${SUBDIRS}
 ${SUBDIRS}:
 	${MAKE} -C $@
 
-${XPI_FILENAME}: subdirs
+install.rdf: install.rdf.in
+	./make-install.rdf
+
+${XPI_FILENAME}: subdirs install.rdf
 	rm -rf $@; \
 	zip $@ \
 		components/libtraybiff.so \
