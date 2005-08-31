@@ -1,3 +1,4 @@
 <!ENTITY dialog.title   "Icona per Nuova Mail">
 <!ENTITY features.caption  "Prestazioni">
 <!ENTITY showTrayIconForNewMessages.label  "Mostra una icona nell'area di notifica quando arriva un nuovo messaggio">
+<!ENTITY showAsusLedForNewMessages.label  "Light the New Mail Led on ASUS computers when new messages arrive">

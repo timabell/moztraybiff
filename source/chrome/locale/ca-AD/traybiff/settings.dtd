@@ -1,3 +1,4 @@
 <!ENTITY dialog.title   "Icona de nou correu">
 <!ENTITY features.caption  "Característiques">
 <!ENTITY showTrayIconForNewMessages.label  "Mostra una icona a la safata quan arribin nous missatges">
+<!ENTITY showAsusLedForNewMessages.label  "Light the New Mail Led on ASUS computers when new messages arrive">
