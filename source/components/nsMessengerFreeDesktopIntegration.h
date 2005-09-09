@@ -71,52 +71,56 @@ class nsMessengerFreeDesktopIntegration :
 	public nsSupportsWeakReference
 {
 public:
-  nsMessengerFreeDesktopIntegration();
-  virtual ~nsMessengerFreeDesktopIntegration();
-  virtual nsresult Init();
+	nsMessengerFreeDesktopIntegration();
+	virtual ~nsMessengerFreeDesktopIntegration();
+	virtual nsresult Init();
 
-  NS_DECL_ISUPPORTS
-  NS_DECL_NSIMESSENGEROSINTEGRATION
-  NS_DECL_NSIFOLDERLISTENER
-  NS_DECL_NSIOBSERVER
-  NS_DECL_NSIMESSENGERFREEDESKTOPINTEGRATION
-
-private:
-  void ApplyPrefs();
-  void FillToolTipInfo();
-  void SetToolTipString(const PRUnichar * aToolTipString);
-  void AddBiffIcon();
-  void RemoveBiffIcon();
-  void ShowAsusLed();
-  void HideAsusLed();
-  nsresult GetFirstFolderWithNewMail(char ** aFolderURI, char ** aMessageURI);
-  nsresult GetStringBundle(const char* src, nsIStringBundle **aBundle);
+	NS_DECL_ISUPPORTS
+	NS_DECL_NSIMESSENGEROSINTEGRATION
+	NS_DECL_NSIFOLDERLISTENER
+	NS_DECL_NSIOBSERVER
+	NS_DECL_NSIMESSENGERFREEDESKTOPINTEGRATION
 
 private:
-  nsCOMPtr <nsIPrefBranch> mPrefBranch;
-  PRBool mShowBiffIcon, mShowAsusLed;
-  nsCOMPtr<nsISupportsArray> mFoldersWithNewMail;  // keep track of all the root folders with pending new mail
-  nsCOMPtr<nsIAtom> mBiffStateAtom;
+	void ApplyPrefs();
+	void FillToolTipInfo();
+	void SetToolTipString(const PRUnichar * aToolTipString);
+	void AddBiffIcon();
+	void RemoveBiffIcon();
+	void ShowAsusLed();
+	void HideAsusLed();
+	// Called when mHasBiff is changed and responsible for changing the visual cues.
+	void OnBiffChange();
+	nsresult GetFirstFolderWithNewMail(char ** aFolderURI, char ** aMessageURI);
+	nsresult GetStringBundle(const char* src, nsIStringBundle **aBundle);
+
+private:
+	nsCOMPtr <nsIPrefBranch> mPrefBranch;
+	PRBool mShowBiffIcon, mShowAsusLed, mAlwaysShowBiffIcon;
+	PRBool mHasBiff;
+	nsCOMPtr<nsISupportsArray> mFoldersWithNewMail;	// keep track of all the root folders with pending new mail
+	nsCOMPtr<nsIAtom> mBiffStateAtom;
 
 // Event handlers which map directly to GTK+ events on the tray icon.
 private:
-  // 1st buttom clicked on the tray icon.
-  void OnBiffIconActivate();
-  // 3rd button clicked on the tray icon.
-  void OnBiffIconPopupMenu(unsigned int button, unsigned int activateTime);
-  // 'Hide' selected from context menu.
-  void OnBiffIconHide();
+	// 1st buttom clicked on the tray icon.
+	void OnBiffIconActivate();
+	// 3rd button clicked on the tray icon.
+	void OnBiffIconPopupMenu(unsigned int button, unsigned int activateTime);
 
 // GTK+ signal handlers
 private:
-  static void TrayIconPopupMenu(GtkWidget *trayIcon, guint button, guint activateTime, void *data);
-  static void TrayIconActivate(GtkWidget *trayIcon, void *data);
-  static void TrayIconHide(GtkMenuItem *menuItem, void *data);
+	static void TrayIconPopupMenu(GtkWidget *trayIcon, guint button, guint activateTime, void *data);
+	static void TrayIconActivate(GtkWidget *trayIcon, void *data);
+	static void TrayIconHide(GtkMenuItem *menuItem, void *data);
   
 // GTK+ tray icon-related members
 private:
-  EggStatusIcon* mTrayIcon;
-  GtkWidget* mTrayMenu;
+	EggStatusIcon* mTrayIcon;
+	GtkWidget* mTrayMenu;
+	
+protected:
+	nsCAutoString mBrandIconPath;
 };
 
 #endif // __nsMessengerFreeDesktopIntegration_h

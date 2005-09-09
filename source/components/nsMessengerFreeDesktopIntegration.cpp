@@ -22,6 +22,8 @@
  * Contributor(s):
  * Seth Spitzer <sspitzer@netscape.com>
  * Bhuvan Racham <racham@netscape.com>
+ * Ilya Konstantinov
+ * Portions were taken or adapted from various Mozilla source files.
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or 
@@ -61,11 +63,14 @@
 #include <nsIWidget.h>
 
 #include <nsIMessengerWindowService.h>
+#include <nsMsgUtils.h>
 #include <prprf.h>
 #include <nsIWeakReference.h>
 #include <nsIStringBundle.h>
 #include <nsIPrefService.h>
 #include <nsIPrefBranchInternal.h>
+
+#include <nsAppDirectoryServiceDefs.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -83,6 +88,7 @@ const char* FILENAME_ASUS_LED = "/proc/acpi/asus/mled";
 // Prefs in use
 const char* PREF_BIFF_SHOW_ICON = "mail.biff.show_icon";
 const char* PREF_BIFF_SHOW_ASUS_LED = "mail.biff.show_asus_led";
+const char* PREF_BIFF_ALWAYS_SHOW_ICON = "mail.biff.always_show_icon";
 
 // String bundles
 const char* STRING_BUNDLE_MESSENGER = "chrome://messenger/locale/messenger.properties";
@@ -91,178 +97,344 @@ const char* STRING_BUNDLE_TRAYBIFF = "chrome://traybiff/locale/traybiff.properti
 // Useful for debugging.
 inline void PrintAtom(nsIAtom* atom)
 {
-  const char *res;
-  atom->GetUTF8String(&res);
-  fprintf(stderr, "Atom = %s\n", res);
+	const char *res;
+	atom->GetUTF8String(&res);
+	fprintf(stderr, "Atom = %s\n", res);
 }
 
 #include "eggstatusicon.h"
 #include <gtk/gtk.h>
 
-// Refer to mail/base/content/mailCore.js : toMessengerWindow() to see
-// how we raise the mailer window.
-
-static void openMailWindow(const PRUnichar * aMailWindowName, const char * aFolderUri, const char * aMessageUri)
+/**
+ * Modifies aFile to point at an icon file with the given name and suffix.  The
+ * suffix may correspond to a file extension with leading '.' if appropriate.
+ * Returns true if the icon file exists and can be read.
+ * @note Taken from nsBaseWidget.cpp
+ */
+static PRBool
+ResolveIconNameHelper(nsILocalFile *aFile,
+                      const nsAString &aIconName,
+                      const nsAString &aIconSuffix)
 {
-  nsCOMPtr<nsIWindowMediator> mediator ( do_GetService(NS_WINDOWMEDIATOR_CONTRACTID) );
-  if (mediator)
-  {
-    nsCOMPtr<nsIDOMWindowInternal> domWindow;
-    mediator->GetMostRecentWindow(aMailWindowName, getter_AddRefs(domWindow));
-    if (domWindow)
-    {
-      nsCOMPtr<nsISupports> xpConnectObj;
-      nsCOMPtr<nsPIDOMWindow> piDOMWindow(do_QueryInterface(domWindow));
-      if (piDOMWindow)
-      {
-        piDOMWindow->GetObjectProperty(NS_LITERAL_STRING("MsgWindowCommands").get(), getter_AddRefs(xpConnectObj));
-        nsCOMPtr<nsIMsgWindowCommands> msgWindowCommands = do_QueryInterface(xpConnectObj);
-        if (msgWindowCommands)
-        {
-          msgWindowCommands->SelectFolder(aFolderUri);
-          msgWindowCommands->SelectMessage(aMessageUri);
-        }
-      }
+	aFile->Append(NS_LITERAL_STRING("icons"));
+	aFile->Append(NS_LITERAL_STRING("default"));
+	aFile->Append(aIconName + aIconSuffix);
 
-      // TODO: Original Win32 code tried to restore minimized window and move
-      // to foregroud. Should we do some GTK+ magic?
-      // (original code was from nsNativeAppWinSupport.cpp)
-      // focus() on X11 brings the window up but doesn't focus it.
-      domWindow->Focus();
-    }
-    else
-    {
-      // the user doesn't have a mail window open already so open one for them...
-      nsCOMPtr <nsIMessengerWindowService> messengerWindowService = do_GetService(NS_MESSENGERWINDOWSERVICE_CONTRACTID);
-      // if we want to preselect the first account with new mail, here is where we would try to generate
-      // a uri to pass in (and add code to the messenger window service to make that work)
-      if (messengerWindowService) 
-        messengerWindowService->OpenMessengerWindowWithUri("mail:3pane", aFolderUri, nsMsgKey_None);
+	PRBool readable;
+	return NS_SUCCEEDED(aFile->IsReadable(&readable)) && readable;
+}
+
+/**
+ * Resolve the given icon name into a local file object.  This method is
+ * intended to be called by subclasses of nsBaseWidget.  aIconSuffix is a
+ * platform specific icon file suffix (e.g., ".ico" under Win32).
+ *
+ * If no file is found matching the given parameters, then null is returned.
+ * @note Taken from nsBaseWidget.cpp
+ */
+void ResolveIconName(const nsAString &aIconName, const nsAString &aIconSuffix, nsILocalFile **aResult)
+{ 
+  *aResult = nsnull;
+
+  nsCOMPtr<nsIProperties> dirSvc = do_GetService(NS_DIRECTORY_SERVICE_CONTRACTID);
+  if (!dirSvc)
+    return;
+
+  // first check auxilary chrome directories
+
+  nsCOMPtr<nsISimpleEnumerator> dirs;
+  dirSvc->Get(NS_APP_CHROME_DIR, NS_GET_IID(nsISimpleEnumerator), getter_AddRefs(dirs));
+  if (dirs) {
+    PRBool hasMore;
+    while (NS_SUCCEEDED(dirs->HasMoreElements(&hasMore)) && hasMore) {
+      nsCOMPtr<nsISupports> element;
+      dirs->GetNext(getter_AddRefs(element));
+      if (!element)
+        continue;
+      nsCOMPtr<nsILocalFile> file = do_QueryInterface(element);
+      if (!file)
+        continue;
+      if (ResolveIconNameHelper(file, aIconName, aIconSuffix)) {
+        NS_ADDREF(*aResult = file);
+        return;
+      }
     }
   }
+
+  // then check the main app chrome directory
+
+  nsCOMPtr<nsILocalFile> file;
+  dirSvc->Get(NS_APP_CHROME_DIR, NS_GET_IID(nsILocalFile),
+              getter_AddRefs(file));
+  if (file && ResolveIconNameHelper(file, aIconName, aIconSuffix))
+    NS_ADDREF(*aResult = file);
+}
+
+GdkWindow* GetGdkWindowForDOMWindow(nsISupports *window)
+{
+	nsCOMPtr<nsIScriptGlobalObject> ppScriptGlobalObj( do_QueryInterface(window) );
+	if ( !ppScriptGlobalObj )
+		return 0;
+  
+	nsCOMPtr<nsIBaseWindow> ppBaseWindow = do_QueryInterface( ppScriptGlobalObj->GetDocShell() );
+	if (!ppBaseWindow)
+		return 0;
+
+	nsCOMPtr<nsIWidget> ppWidget;
+	ppBaseWindow->GetMainWidget( getter_AddRefs( ppWidget ) );
+ 
+	return reinterpret_cast<GdkWindow*>( ppWidget->GetNativeData( NS_NATIVE_WIDGET ) );
+}
+
+//! @brief Opens a (preferrably existing) window, optionally going to a certain message.
+//! @note Refer to mail/base/content/mailCore.js : toMessengerWindow() to see
+//! how we raise the mailer window.
+//! @param[in] aMailWindowName Name of the mailer window. Usually "mail:3pane".
+//! @param[in] aFolderUri Optional parameter specifying the URI of a folder to switch the mail view to. 
+//! @param[in] aMessageUri Optional parameter specifying the URI of a folder to switch the mail view to. 
+static void openMailWindow(const PRUnichar * aMailWindowName, const char * aFolderUri, const char * aMessageUri)
+{
+	nsCOMPtr<nsIDOMWindowInternal> domWindow;
+	
+	nsCOMPtr<nsIWindowMediator> mediator ( do_GetService(NS_WINDOWMEDIATOR_CONTRACTID) );
+	NS_ASSERTION(mediator, "no mediator");
+	if (aMailWindowName != NULL)
+	{
+		mediator->GetMostRecentWindow(aMailWindowName, getter_AddRefs(domWindow));
+		
+		if (domWindow)
+		{
+			// Jump to the desired folder/message
+			nsCOMPtr<nsISupports> xpConnectObj;
+			nsCOMPtr<nsPIDOMWindow> piDOMWindow(do_QueryInterface(domWindow));
+			if (piDOMWindow)
+			{
+				if ((aFolderUri != NULL) && (aMessageUri != NULL))
+				{
+					piDOMWindow->GetObjectProperty(NS_LITERAL_STRING("MsgWindowCommands").get(), getter_AddRefs(xpConnectObj));
+					nsCOMPtr<nsIMsgWindowCommands> msgWindowCommands = do_QueryInterface(xpConnectObj);
+					if (msgWindowCommands)
+					{
+						if (aFolderUri != NULL)
+						{
+							msgWindowCommands->SelectFolder(aFolderUri);
+							if (aMessageUri != NULL)
+								msgWindowCommands->SelectMessage(aMessageUri);
+						}
+					}
+				}
+			}
+
+			// window.focus() on X11 brings the window up but doesn't focus it,
+			// so we do some GDK magic:
+			GdkWindow* pGdkWindow = GetGdkWindowForDOMWindow(domWindow);
+			if (GDK_IS_WINDOW(pGdkWindow))
+			{
+				GdkWindow * root = gdk_window_get_toplevel(pGdkWindow);
+				gdk_window_show(root);
+				gdk_window_raise(root);
+			}
+			domWindow->Focus();
+		}
+	}
+	
+	if (!domWindow)
+	{
+		nsMsgKey msgKey = nsMsgKey_None;
+		// If a specific message is needed, go through the hoops required to translate
+		// a message URL into a message key.
+		if (aMessageUri != NULL)
+		{
+			nsCOMPtr<nsIMsgDBHdr> hdr;
+			GetMsgDBHdrFromURI(aMessageUri, getter_AddRefs(hdr));
+			if (hdr)
+				hdr->GetMessageKey(&msgKey);
+		}
+		
+		nsCOMPtr <nsIMessengerWindowService> messengerWindowService = do_GetService(NS_MESSENGERWINDOWSERVICE_CONTRACTID);
+		if (messengerWindowService) 
+			messengerWindowService->OpenMessengerWindowWithUri("mail:3pane", aFolderUri, msgKey);
+	}
+}
+
+static void toggleMailWindow(const PRUnichar * aMailWindowName)
+{
+	nsCOMPtr<nsIDOMWindowInternal> domWindow;
+	
+	nsCOMPtr<nsIWindowMediator> mediator ( do_GetService(NS_WINDOWMEDIATOR_CONTRACTID) );
+	NS_ASSERTION(mediator, "no mediator");
+	if (aMailWindowName != NULL)
+	{
+		mediator->GetMostRecentWindow(aMailWindowName, getter_AddRefs(domWindow));
+		if (domWindow)
+		{
+			// window.focus() on X11 brings the window up but doesn't focus it,
+			// so we do some GDK magic:
+			GdkWindow* pGdkWindow = GetGdkWindowForDOMWindow(domWindow);
+			if (GDK_IS_WINDOW(pGdkWindow))
+			{
+				GdkWindow * root = gdk_window_get_toplevel(pGdkWindow);
+				if(gdk_window_is_visible(root))
+				{
+					gdk_window_hide(root);
+				}
+				else
+				{
+					gdk_window_show(root);
+					gdk_window_raise(root);
+					domWindow->Focus();
+				}
+			}
+		}
+	}
+	
+	if (!domWindow)
+	{
+		nsCOMPtr <nsIMessengerWindowService> messengerWindowService = do_GetService(NS_MESSENGERWINDOWSERVICE_CONTRACTID);
+		if (messengerWindowService) 
+			messengerWindowService->OpenMessengerWindowWithUri("mail:3pane", NULL, nsMsgKey_None);
+	}
 }
 
 nsMessengerFreeDesktopIntegration::nsMessengerFreeDesktopIntegration() :
-
 	mTrayIcon(NULL),
 	mTrayMenu(NULL),
-	
 	mShowBiffIcon(PR_TRUE)
-	
 {
-  mBiffStateAtom = do_GetAtom("BiffState");
-  NS_NewISupportsArray(getter_AddRefs(mFoldersWithNewMail));
+	mBiffStateAtom = do_GetAtom("BiffState");
+	NS_NewISupportsArray(getter_AddRefs(mFoldersWithNewMail));
+
+	nsCOMPtr<nsILocalFile> iconFile;
+	ResolveIconName(NS_LITERAL_STRING("messengerWindow16"), NS_LITERAL_STRING(".xpm"), getter_AddRefs(iconFile));
+	if (iconFile)
+	{
+		iconFile->GetNativePath(mBrandIconPath);
+	}
 }
 
 nsMessengerFreeDesktopIntegration::~nsMessengerFreeDesktopIntegration()
 {
-  RemoveBiffIcon();
-  HideAsusLed();
+	RemoveBiffIcon();
+	HideAsusLed();
 
-  if (mTrayMenu != NULL)
-     gtk_widget_destroy(mTrayMenu);
+	if (mTrayMenu != NULL)
+		gtk_widget_destroy(mTrayMenu);
 }
 
 NS_IMPL_ADDREF(nsMessengerFreeDesktopIntegration)
 NS_IMPL_RELEASE(nsMessengerFreeDesktopIntegration)
 
 NS_INTERFACE_MAP_BEGIN(nsMessengerFreeDesktopIntegration)
-   NS_INTERFACE_MAP_ENTRY_AMBIGUOUS(nsISupports, nsIMessengerOSIntegration)
-   NS_INTERFACE_MAP_ENTRY(nsIMessengerOSIntegration)
-   NS_INTERFACE_MAP_ENTRY(nsIMessengerFreeDesktopIntegration)
-   NS_INTERFACE_MAP_ENTRY(nsIFolderListener)
-   NS_INTERFACE_MAP_ENTRY(nsIObserver)
-   NS_INTERFACE_MAP_ENTRY(nsISupportsWeakReference)
+	NS_INTERFACE_MAP_ENTRY_AMBIGUOUS(nsISupports, nsIMessengerOSIntegration)
+	NS_INTERFACE_MAP_ENTRY(nsIMessengerOSIntegration)
+	NS_INTERFACE_MAP_ENTRY(nsIMessengerFreeDesktopIntegration)
+	NS_INTERFACE_MAP_ENTRY(nsIFolderListener)
+	NS_INTERFACE_MAP_ENTRY(nsIObserver)
+	NS_INTERFACE_MAP_ENTRY(nsISupportsWeakReference)
 NS_INTERFACE_MAP_END
 
 nsresult
 nsMessengerFreeDesktopIntegration::Init()
 {
-  nsresult rv;
-  
-  /*
-     Support for Thunderbird's "Disable Extension" functionality.
-     Even though we don't really need the chrome to function (for now),
-     the user will (rightfully) expect that "Disable Extension" would
-     disable the XPCOM component as well.
+	nsresult rv;
+	
+	/*
+	 Support for Thunderbird's "Disable Extension" functionality.
+	 Even though we don't really need the chrome to function (for now),
+	 the user will (rightfully) expect that "Disable Extension" would
+	 disable the XPCOM component as well.
 
-     The following code is ripped from chatzilla-service.js.
-  */
-  // Checking if we're disabled in the Chrome Registry.
-  nsCOMPtr<nsIRDFService> rdfSvc = do_GetService("@mozilla.org/rdf/rdf-service;1", &rv);
-  NS_ENSURE_SUCCESS(rv, rv);
-  nsCOMPtr<nsIRDFDataSource> rdfDS;
-  rv = rdfSvc->GetDataSource("rdf:chrome", getter_AddRefs(rdfDS));
-  NS_ENSURE_SUCCESS(rv, rv);
-  nsCOMPtr<nsIRDFResource> resSelf;
-  rv = rdfSvc->GetResource(NS_LITERAL_CSTRING("urn:mozilla:package:traybiff"), getter_AddRefs(resSelf));
-  NS_ENSURE_SUCCESS(rv, rv);
-  nsCOMPtr<nsIRDFResource> resDisabled;
-  rv = rdfSvc->GetResource(NS_LITERAL_CSTRING("http://www.mozilla.org/rdf/chrome#disabled"), getter_AddRefs(resDisabled));
-  NS_ENSURE_SUCCESS(rv, rv);
-  nsCOMPtr<nsIRDFNode> resNode;
-  rv = rdfDS->GetTarget(resSelf, resDisabled, true, getter_AddRefs(resNode));
-  NS_ENSURE_SUCCESS(rv, rv);
-  if (resNode != NULL)
-  {
-     // The chrome for this extension is marked as disabled.
-     return NS_ERROR_FAILURE;
-  }
+	 The following code is ripped from chatzilla-service.js.
+	*/
+	// Checking if we're disabled in the Chrome Registry.
+	nsCOMPtr<nsIRDFService> rdfSvc = do_GetService("@mozilla.org/rdf/rdf-service;1", &rv);
+	NS_ENSURE_SUCCESS(rv, rv);
+	nsCOMPtr<nsIRDFDataSource> rdfDS;
+	rv = rdfSvc->GetDataSource("rdf:chrome", getter_AddRefs(rdfDS));
+	NS_ENSURE_SUCCESS(rv, rv);
+	nsCOMPtr<nsIRDFResource> resSelf;
+	rv = rdfSvc->GetResource(NS_LITERAL_CSTRING("urn:mozilla:package:traybiff"), getter_AddRefs(resSelf));
+	NS_ENSURE_SUCCESS(rv, rv);
+	nsCOMPtr<nsIRDFResource> resDisabled;
+	rv = rdfSvc->GetResource(NS_LITERAL_CSTRING("http://www.mozilla.org/rdf/chrome#disabled"), getter_AddRefs(resDisabled));
+	NS_ENSURE_SUCCESS(rv, rv);
+	nsCOMPtr<nsIRDFNode> resNode;
+	rv = rdfDS->GetTarget(resSelf, resDisabled, true, getter_AddRefs(resNode));
+	NS_ENSURE_SUCCESS(rv, rv);
+	if (resNode != NULL)
+	{
+		// The chrome for this extension is marked as disabled.
+		return NS_ERROR_FAILURE;
+	}
 
-  // get pref service
-  nsCOMPtr<nsIPrefService> prefService;
-  prefService = do_GetService(NS_PREFSERVICE_CONTRACTID, &rv);
-  NS_ENSURE_SUCCESS(rv,rv);
-  
-  // get mail.biff pref branch and watch it for interesting prefs changing
-  prefService->GetBranch(nsnull, getter_AddRefs(mPrefBranch));
-  nsCOMPtr<nsIPrefBranchInternal> rootBranchInternal = do_QueryInterface(mPrefBranch);
-  // ... with weak reference (PR_TRUE), to avoid cleaning up at shutdown.
-  rv = rootBranchInternal->AddObserver(PREF_BIFF_SHOW_ICON, this, PR_TRUE);
-  rv = rootBranchInternal->AddObserver(PREF_BIFF_SHOW_ASUS_LED, this, PR_TRUE);
-  NS_ENSURE_SUCCESS(rv,rv);
+	// get pref service
+	nsCOMPtr<nsIPrefService> prefService;
+	prefService = do_GetService(NS_PREFSERVICE_CONTRACTID, &rv);
+	NS_ENSURE_SUCCESS(rv,rv);
+	
+	// get mail.biff pref branch and watch it for interesting prefs changing
+	prefService->GetBranch(nsnull, getter_AddRefs(mPrefBranch));
+	nsCOMPtr<nsIPrefBranchInternal> rootBranchInternal = do_QueryInterface(mPrefBranch);
+	// ... with weak reference (PR_TRUE), to avoid cleaning up at shutdown.
+	rv = rootBranchInternal->AddObserver(PREF_BIFF_SHOW_ICON, this, PR_TRUE);
+	rv = rootBranchInternal->AddObserver(PREF_BIFF_SHOW_ASUS_LED, this, PR_TRUE);
+	rv = rootBranchInternal->AddObserver(PREF_BIFF_ALWAYS_SHOW_ICON, this, PR_TRUE);
+	NS_ENSURE_SUCCESS(rv,rv);
 
-  // because we care about biff notifications
-  nsCOMPtr <nsIMsgMailSession> mailSession = do_GetService(NS_MSGMAILSESSION_CONTRACTID, &rv);
-  NS_ENSURE_SUCCESS(rv,rv);
-  rv = mailSession->AddFolderListener(this, nsIFolderListener::propertyFlagChanged);
-  NS_ENSURE_SUCCESS(rv,rv);
-  // In the future, we might want to add more properties here, to enable us to display
-  // the unread message count etc.
-  // For reference, see:
-  // - nsMessengerWinIntegration.cpp
-  // - nsStatusBarBiffManager.cpp
+	// because we care about biff notifications
+	nsCOMPtr <nsIMsgMailSession> mailSession = do_GetService(NS_MSGMAILSESSION_CONTRACTID, &rv);
+	NS_ENSURE_SUCCESS(rv,rv);
+	rv = mailSession->AddFolderListener(this, nsIFolderListener::propertyFlagChanged);
+	NS_ENSURE_SUCCESS(rv,rv);
+	// In the future, we might want to add more properties here, to enable us to display
+	// the unread message count etc.
+	// For reference, see:
+	// - nsMessengerWinIntegration.cpp
+	// - nsStatusBarBiffManager.cpp
 
-  ApplyPrefs();
+	ApplyPrefs();
 
-  return NS_OK;
+	if (mBiffStateAtom)
+		AddBiffIcon();
+
+	return NS_OK;
 }
 
 NS_IMETHODIMP
 nsMessengerFreeDesktopIntegration::Observe(nsISupports *aSubject, const char *aTopic, const PRUnichar *aData)
 {
-  if (nsCRT::strcmp(aTopic, NS_PREFBRANCH_PREFCHANGE_TOPIC_ID) == 0)
-  {
-     nsCOMPtr<nsIPrefBranchInternal> pPrefBranch( do_QueryInterface(aSubject) );
-     nsCAutoString prefName;
-     prefName.AppendWithConversion(aData);
-     
-     if (prefName.Equals(PREF_BIFF_SHOW_ICON) ||
-         prefName.Equals(PREF_BIFF_SHOW_ASUS_LED))
-        ApplyPrefs();
-  }
-  
-  return NS_OK;
+	if (nsCRT::strcmp(aTopic, NS_PREFBRANCH_PREFCHANGE_TOPIC_ID) == 0)
+	{
+		nsCOMPtr<nsIPrefBranchInternal> pPrefBranch( do_QueryInterface(aSubject) );
+		nsCAutoString prefName;
+		prefName.AppendWithConversion(aData);
+
+		if (prefName.Equals(PREF_BIFF_SHOW_ICON) ||
+		    prefName.Equals(PREF_BIFF_SHOW_ASUS_LED) ||
+		    prefName.Equals(PREF_BIFF_ALWAYS_SHOW_ICON))
+			ApplyPrefs();
+	}
+	return NS_OK;
 }
 
 void nsMessengerFreeDesktopIntegration::ApplyPrefs()
 {
+	mPrefBranch->GetBoolPref(PREF_BIFF_ALWAYS_SHOW_ICON, &mAlwaysShowBiffIcon);
 	mPrefBranch->GetBoolPref(PREF_BIFF_SHOW_ICON, &mShowBiffIcon);
 	mPrefBranch->GetBoolPref(PREF_BIFF_SHOW_ASUS_LED, &mShowAsusLed);
-	if (!mShowBiffIcon)
+	if (mAlwaysShowBiffIcon)
+	{
+		mShowBiffIcon = true; // force to true
+		AddBiffIcon();
+	}
+	else if (!mShowBiffIcon || !mHasBiff)
+	{
 		RemoveBiffIcon();
+	}
 	if (!mShowAsusLed)
+	{
 		HideAsusLed();
+	}
 }
 
 NS_IMETHODIMP
@@ -434,24 +606,35 @@ nsresult nsMessengerFreeDesktopIntegration::GetFirstFolderWithNewMail(char ** aF
 
 void nsMessengerFreeDesktopIntegration::AddBiffIcon()
 {
-  if (mTrayIcon == NULL)
-  {
-     GdkPixbuf* pixbuf = gdk_pixbuf_new_from_inline(-1, tray_biff_icon, FALSE, NULL);
-     // This should be ideally replaced by a completely libpr0n-based icon rendering.
-     mTrayIcon = egg_status_icon_new_from_pixbuf(pixbuf);
-     g_signal_connect(G_OBJECT(mTrayIcon), "activate", G_CALLBACK(TrayIconActivate), this);
-     g_signal_connect(G_OBJECT(mTrayIcon), "popup-menu", G_CALLBACK(TrayIconPopupMenu), this);
-     g_object_unref(G_OBJECT(pixbuf));
-  }
+	if (mTrayIcon == NULL)
+	{
+		// This should be ideally replaced by a completely libpr0n-based icon rendering.
+		GError* err = NULL;
+		GdkPixbuf* pixbuf = gdk_pixbuf_new_from_file(mBrandIconPath.get(), &err);
+		if (pixbuf != NULL)
+		{
+			mTrayIcon = egg_status_icon_new_from_pixbuf(pixbuf);
+			if (mTrayIcon != NULL)
+			{
+				g_signal_connect(G_OBJECT(mTrayIcon), "activate", G_CALLBACK(TrayIconActivate), this);
+				g_signal_connect(G_OBJECT(mTrayIcon), "popup-menu", G_CALLBACK(TrayIconPopupMenu), this);
+			}
+			g_object_unref(G_OBJECT(pixbuf));
+		}
+		else
+		{
+			fprintf (stderr, "%s\n", err->message);
+		}
+	}
 }
 
 void nsMessengerFreeDesktopIntegration::RemoveBiffIcon()
 {
-  if (mTrayIcon != NULL)
-  {
-     g_object_unref(G_OBJECT(mTrayIcon));
-     mTrayIcon = NULL;
-  }
+	if (mTrayIcon != NULL)
+	{
+		g_object_unref(G_OBJECT(mTrayIcon));
+		mTrayIcon = NULL;
+	}
 }
 
 NS_IMETHODIMP
@@ -500,10 +683,58 @@ void nsMessengerFreeDesktopIntegration::HideAsusLed()
 
 void nsMessengerFreeDesktopIntegration::OnBiffIconActivate()
 {
-  nsXPIDLCString folderURI, messageURI;
-  GetFirstFolderWithNewMail(getter_Copies(folderURI), getter_Copies(messageURI));
+	if (mHasBiff)
+	{
+		nsXPIDLCString folderURI, messageURI;
+		GetFirstFolderWithNewMail(getter_Copies(folderURI), getter_Copies(messageURI));
+		openMailWindow(NS_LITERAL_STRING("mail:3pane").get(), folderURI, messageURI);
+	}
+	else
+	{
+		toggleMailWindow(NS_LITERAL_STRING("mail:3pane").get());
+	}
+}
 
-  openMailWindow(NS_LITERAL_STRING("mail:3pane").get(), folderURI, messageURI);
+void nsMessengerFreeDesktopIntegration::OnBiffChange()
+{
+	if (mHasBiff)
+	{
+		if (mShowBiffIcon)
+		{
+			AddBiffIcon();
+			FillToolTipInfo();
+			GdkPixbuf* pixbuf = gdk_pixbuf_new_from_inline(-1, tray_biff_icon, FALSE, NULL);
+			egg_status_icon_set_from_pixbuf(mTrayIcon, pixbuf);
+			g_object_unref(G_OBJECT(pixbuf));
+		}
+	      
+		if (mShowAsusLed)
+		{
+			ShowAsusLed();
+		}
+	}
+	else
+	{
+		if (mAlwaysShowBiffIcon)
+		{
+			GError* err = NULL;
+			GdkPixbuf* pixbuf = gdk_pixbuf_new_from_file(mBrandIconPath.get(), &err);
+			if (pixbuf != NULL)
+			{
+				egg_status_icon_set_from_pixbuf(mTrayIcon, pixbuf);
+				g_object_unref(G_OBJECT(pixbuf));
+			}
+			else
+			{
+				fprintf (stderr, "%s\n", err->message);
+			}
+		}
+		else
+		{
+			RemoveBiffIcon();
+		}
+		HideAsusLed();
+	}
 }
 
 void nsMessengerFreeDesktopIntegration::OnBiffIconPopupMenu(unsigned int button, unsigned int activateTime)
@@ -533,20 +764,10 @@ void nsMessengerFreeDesktopIntegration::OnBiffIconPopupMenu(unsigned int button,
      g_signal_connect(G_OBJECT(entry), "activate", G_CALLBACK(TrayIconActivate), this);
      gtk_menu_shell_append(GTK_MENU_SHELL(mTrayMenu), entry);
 
-     entry = gtk_menu_item_new_with_label(NS_ConvertUTF16toUTF8(menuItemHide).get());
-     g_signal_connect(G_OBJECT(entry), "activate", G_CALLBACK(TrayIconHide), this);
-     gtk_menu_shell_append(GTK_MENU_SHELL(mTrayMenu), entry);
- 
      gtk_widget_show_all(mTrayMenu);
   }
 
   gtk_menu_popup(GTK_MENU(mTrayMenu), NULL, NULL, NULL, NULL, button, activateTime);
-}
-
-void nsMessengerFreeDesktopIntegration::OnBiffIconHide()
-{
-  // Set to hide the biff icon.
-  mPrefBranch->SetBoolPref(PREF_BIFF_SHOW_ICON, PR_FALSE);
 }
 
 /*
@@ -564,11 +785,6 @@ void nsMessengerFreeDesktopIntegration::TrayIconPopupMenu(GtkWidget *trayIcon, g
    reinterpret_cast<nsMessengerFreeDesktopIntegration*>(data)->OnBiffIconPopupMenu(button, activateTime);
 }
 
-void nsMessengerFreeDesktopIntegration::TrayIconHide(GtkMenuItem* menuItem, void *data)
-{
-   reinterpret_cast<nsMessengerFreeDesktopIntegration*>(data)->OnBiffIconHide();
-}
-
 void nsMessengerFreeDesktopIntegration::SetToolTipString(const PRUnichar * aToolTipString)
 {
   if ((aToolTipString == NULL) || 
@@ -582,67 +798,59 @@ void nsMessengerFreeDesktopIntegration::SetToolTipString(const PRUnichar * aTool
 NS_IMETHODIMP
 nsMessengerFreeDesktopIntegration::OnItemPropertyFlagChanged(nsISupports *item, nsIAtom *property, PRUint32 oldFlag, PRUint32 newFlag)
 {
-  nsresult rv = NS_OK;
+	nsresult rv = NS_OK;
 
-  // if we got new mail show a icon in the system tray
-  if (mBiffStateAtom == property && mFoldersWithNewMail)
-  {
-    nsCOMPtr<nsIMsgFolder> folder = do_QueryInterface(item);
-    NS_ENSURE_TRUE(folder, NS_OK);
+	// if we got new mail show a icon in the system tray
+	if (mBiffStateAtom == property && mFoldersWithNewMail)
+	{
+		nsCOMPtr<nsIMsgFolder> folder = do_QueryInterface(item);
+		NS_ENSURE_TRUE(folder, NS_OK);
 
-    if (newFlag == nsIMsgFolder::nsMsgBiffState_NewMail) 
-    {
-      // if the icon is not already visible, only show a system tray icon iff 
-      // we are performing biff (as opposed to the user getting new mail)
-      PRBool performingBiff = PR_FALSE;
-      nsCOMPtr<nsIMsgIncomingServer> server;
-      folder->GetServer(getter_AddRefs(server));
-      if (server)
-        server->GetPerformingBiff(&performingBiff);
-      if (!performingBiff) 
-        return NS_OK; // kick out right now...
-      nsCOMPtr<nsIWeakReference> weakFolder = do_GetWeakReference(folder); 
+		if (newFlag == nsIMsgFolder::nsMsgBiffState_NewMail) 
+		{
+			// if the icon is not already visible, only show a system tray icon iff 
+			// we are performing biff (as opposed to the user getting new mail)
+			PRBool performingBiff = PR_FALSE;
+			nsCOMPtr<nsIMsgIncomingServer> server;
+			folder->GetServer(getter_AddRefs(server));
+			if (server)
+				server->GetPerformingBiff(&performingBiff);
+			if (!performingBiff) 
+				return NS_OK; // kick out right now...
+			nsCOMPtr<nsIWeakReference> weakFolder = do_GetWeakReference(folder); 
 
-      // remove the element if it is already in the array....
-      PRUint32 count = 0;
-      PRUint32 index = 0; 
-      mFoldersWithNewMail->Count(&count);
-      nsCOMPtr<nsISupports> supports;
-      nsCOMPtr<nsIMsgFolder> oldFolder;
-      nsCOMPtr<nsIWeakReference> weakReference;
-      for (index = 0; index < count; index++)
-      {
-        supports = getter_AddRefs(mFoldersWithNewMail->ElementAt(index));
-        weakReference = do_QueryInterface(supports);
-        oldFolder = do_QueryReferent(weakReference);
-        if (oldFolder == folder) // if they point to the same folder
-          break;
-        oldFolder = nsnull;
-      }
+			// remove the element if it is already in the array....
+			PRUint32 count = 0;
+			PRUint32 index = 0; 
+			mFoldersWithNewMail->Count(&count);
+			nsCOMPtr<nsISupports> supports;
+			nsCOMPtr<nsIMsgFolder> oldFolder;
+			nsCOMPtr<nsIWeakReference> weakReference;
+			for (index = 0; index < count; index++)
+			{
+				supports = getter_AddRefs(mFoldersWithNewMail->ElementAt(index));
+				weakReference = do_QueryInterface(supports);
+				oldFolder = do_QueryReferent(weakReference);
+				if (oldFolder == folder) // if they point to the same folder
+					break;
+				oldFolder = nsnull;
+			}
 
-      if (oldFolder)
-        mFoldersWithNewMail->ReplaceElementAt(weakFolder, index);
-      else
-        mFoldersWithNewMail->AppendElement(weakFolder);
-    
-      if (mShowBiffIcon)
-      {
-        AddBiffIcon();
-        FillToolTipInfo();    
-      }
-      
-      if (mShowAsusLed)
-      {
-        ShowAsusLed();
-      }
+			if (oldFolder)
+				mFoldersWithNewMail->ReplaceElementAt(weakFolder, index);
+			else
+				mFoldersWithNewMail->AppendElement(weakFolder);
+
+			// Suggests the icon's default action (which is performed by OnBiffIconActivate)
+			mHasBiff = true;
+			OnBiffChange();
     }
     else if (newFlag == nsIMsgFolder::nsMsgBiffState_NoMail)
     {
-      // we are always going to remove the icon whenever we get our first no mail
-      // notification. 
-      mFoldersWithNewMail->Clear(); 
-      RemoveBiffIcon();
-      HideAsusLed();
+			mFoldersWithNewMail->Clear();
+			// Suggests the icon's default action (which is performed by OnBiffIconActivate)
+			mHasBiff = false;
+			OnBiffChange();
     }
   } // if the biff property changed
   

@@ -1,3 +1,7 @@
+	* By popular request, added an option to always show the tray icon,
+	  regardless of whether there is new mail. Initial implementation was
+	  provided by Patrizio Bassi.
+
 1.1 (2005-04-24):
 
 	* Enabled Hebrew localization.

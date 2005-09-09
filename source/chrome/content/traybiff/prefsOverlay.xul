@@ -9,13 +9,15 @@
 	<script type="application/x-javascript" id="sonuvabitch">
 	<![CDATA[
 		_elementIDs.push("newMailNotificationShowIcon");
+		_elementIDs.push("newMailNotificationShowAsusLed");
 	]]>
 	</script>
 
 	<!-- tray icon toggle -->
 	<groupbox id="newMessagesArrivePrefs">
 		<vbox align="start">
-			<checkbox id="newMailNotificationShowIcon" label="&newMailNotificationShowIcon.label;" pref="true" preftype="bool" prefstring="mail.biff.show_icon" prefattribute="checked"/>
+			<checkbox id="newMailNotificationShowIcon" label="&showTrayIconForNewMessages.label;" pref="true" preftype="bool" prefstring="mail.biff.show_icon" prefattribute="checked"/>
+			<checkbox id="newMailNotificationShowAsusLed" label="&showAsusLedForNewMessages.label;" pref="true" preftype="bool" prefstring="mail.biff.show_asus_led" prefattribute="checked"/>
 		</vbox>
 	</groupbox>
 

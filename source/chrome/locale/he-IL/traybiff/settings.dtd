@@ -1,4 +1,5 @@
 <!ENTITY dialog.title   "סמל של דוא&quot;ל חדש">
 <!ENTITY features.caption  "תכונות">
 <!ENTITY showTrayIconForNewMessages.label  "הצג סמל במגש המערכת כשמגיע דוא&quot;ל חדש">
-<!ENTITY showAsusLedForNewMessages.label  "Light the New Mail Led on ASUS computers when new messages arrive">
+<!ENTITY showAsusLedForNewMessages.label  "הדלק את נורית הדוא&quot; החדש במחשבי ASUS כשמגיעה הודעה חדשה">
+<!ENTITY alwaysShowTrayIcon.label  "תמיד הצג סמל במגש המערכת (מאפשר גישה מהירה ל Thunderbird)">
