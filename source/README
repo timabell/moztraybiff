@@ -9,29 +9,54 @@ when new mail arrives. It supports the standard (FreeDesktop.org) system tray, a
 KDE and IceWM (with 'icewmtray').
 
 Compilation:
-1. Run:
-    make MOZILLA_PLATFORM=suite
-   to build a version for Mozilla Suite, or:
-    make MOZILLA_PLATFORM=tbird
-   to build a version for Mozilla Thunderbird.
+
+   To compile the extension, simply run 'make'. You might need to specify
+   some of the options specified further on the 'make' command-line.
    
-   Notes:
-
-   * If your Mozilla includes are located in a different directory than mozilla-config
-   indicates (e.g. in your Mozilla build directory), set it in the MOZILLA_INCLUDE_PATH
-   environment variable. This can be handy to compile the extension with a private build
-   of Mozilla.
+Compilation Options:
    
-   * To build a version for Mozilla Nightlies ('trunk branch'), run:
+   MOZILLA_PLATFORM=(suite|tbird) *OBLIGATORY*
+     
+     Specifies what platform to target the build for. Possible
+     options are 'suite' (for Mozilla Suite builds) and 'tbird'
+     (for Thunderbird builds), e.g.:
+     
+       make MOZILLA_PLATFORM=tbird
+     
+   MOZ_TRUNK=1
 
-     make MOZ_TRUNK=1
+     To build a version for Mozilla Nightlies ('trunk branch'), specify
+     the MOZ_TRUNK option, e.g.:
 
+       make MOZ_TRUNK=1
+     
+   REAL_CONFIG=<path>
+
+     If your 'mozilla-thunderbird-config' executable is located in a
+     different location which is not in your path, use the REAL_CONFIG
+     option to specify the real configuration script
+     when invoking 'make', e.g.:
+
+       make REAL_CONFIG=$HOME/mozilla-thunderbird-config
+
+     As most distros don't come with a development(SDK) package for
+     Thunderbird, you might need to build this extension with
+     your build of Thunderbird. It is recommended to use the same
+     original package as your distro used (e.g. by taking the distro's
+     SRPM and rebuilding it). This option should point at the
+     configuration script of that build.
+     
 Installation:
-- In Mozilla Suite:
-  Open the XPI file in Mozilla Suite ('File | Open' menu option,
-  or by browsing to it).
-- In Mozilla Thunderbird:
-  Use the Extension Manager (available via 'Tools | Install Extension' menu option)
-  to install the XPI file.
 
+  In Mozilla Suite:
+  
+    Open the XPI file in Mozilla Suite ('File | Open' menu option,
+    or by browsing to it).
+    
+  In Mozilla Thunderbird:
+
+    Use the Extension Manager (available via 'Tools | Install Extension' menu option)
+    to install the XPI file.
+
+--
 Share and enjoy!
