@@ -29,6 +29,18 @@ Compilation Options:
      the MOZ_TRUNK option, e.g.:
 
        make MOZ_TRUNK=1
+
+     This will attempt to use code adapted for recent Mozilla Nightlies
+     rather than code for the stable version this extension was
+     intended for. Note however than the extension is not guaranteed
+     to compile cleanly with "nightlies".
+
+   DEBUG=1
+
+     To build a debug version (no optimizations, with symbols) version
+     of the extension's native component, specify the DEBUG option, e.g.:
+
+       make DEBUG=1
      
    REAL_CONFIG=<path>
 
