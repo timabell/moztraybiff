@@ -476,8 +476,8 @@ void nsMessengerFreeDesktopIntegration::ApplyPrefs()
 	if (mAlwaysShowBiffIcon)
 	{
 		mShowBiffIcon = true; // force to true
-		ClearToolTip();
 		AddBiffIcon();
+		ClearToolTip();
 	}
 	else if (!mShowBiffIcon || !mHasBiff)
 	{
