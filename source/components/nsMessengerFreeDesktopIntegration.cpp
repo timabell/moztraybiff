@@ -82,12 +82,19 @@
 // Meanwhile, we'll embed the icon:
 #include "trayBiffIcon.h"
 
-// Pathname of ASUS New Mail Led control file
-const char* FILENAME_ASUS_LED = "/proc/acpi/asus/mled";
+// Path to the New Mail Led control files
+const char* HW_INDICATOR_CONTROL_FILENAMES[] = {
+	// ASUS laptop led on Linux
+	"/proc/acpi/asus/mled",
+	// ACER New Mail led on Linux
+	"/proc/driver/acerhk/led"
+};
 
 // Prefs in use
 const char* PREF_BIFF_SHOW_ICON = "mail.biff.show_icon";
 const char* PREF_BIFF_SHOW_ASUS_LED = "mail.biff.show_asus_led";
+const char* PREF_BIFF_USE_HW_INDICATOR = "mail.biff.use_hw_indicator";
+const char* PREF_BIFF_HW_INDICATOR_FILE = "mail.biff.hw_indicator_file";
 const char* PREF_BIFF_ALWAYS_SHOW_ICON = "mail.biff.always_show_icon";
 
 // String bundles
@@ -315,7 +322,7 @@ nsMessengerFreeDesktopIntegration::nsMessengerFreeDesktopIntegration() :
 nsMessengerFreeDesktopIntegration::~nsMessengerFreeDesktopIntegration()
 {
 	RemoveBiffIcon();
-	HideAsusLed();
+	HideHwIndicator();
 
 	if (mTrayMenu != NULL)
 		gtk_widget_destroy(mTrayMenu);
@@ -378,6 +385,8 @@ nsMessengerFreeDesktopIntegration::Init()
 	// ... with weak reference (PR_TRUE), to avoid cleaning up at shutdown.
 	rv = rootBranchInternal->AddObserver(PREF_BIFF_SHOW_ICON, this, PR_TRUE);
 	rv = rootBranchInternal->AddObserver(PREF_BIFF_SHOW_ASUS_LED, this, PR_TRUE);
+	rv = rootBranchInternal->AddObserver(PREF_BIFF_USE_HW_INDICATOR, this, PR_TRUE);
+	rv = rootBranchInternal->AddObserver(PREF_BIFF_HW_INDICATOR_FILE, this, PR_TRUE);
 	rv = rootBranchInternal->AddObserver(PREF_BIFF_ALWAYS_SHOW_ICON, this, PR_TRUE);
 	NS_ENSURE_SUCCESS(rv,rv);
 
@@ -394,9 +403,6 @@ nsMessengerFreeDesktopIntegration::Init()
 
 	ApplyPrefs();
 
-	if (mBiffStateAtom)
-		AddBiffIcon();
-
 	return NS_OK;
 }
 
@@ -408,11 +414,16 @@ nsMessengerFreeDesktopIntegration::Observe(nsISupports *aSubject, const char *aT
 		nsCOMPtr<nsIPrefBranchInternal> pPrefBranch( do_QueryInterface(aSubject) );
 		nsCAutoString prefName;
 		prefName.AppendWithConversion(aData);
-
+		
 		if (prefName.Equals(PREF_BIFF_SHOW_ICON) ||
+		    prefName.Equals(PREF_BIFF_USE_HW_INDICATOR) ||
+		    prefName.Equals(PREF_BIFF_HW_INDICATOR_FILE) ||
+		    // for backward compatibility:
 		    prefName.Equals(PREF_BIFF_SHOW_ASUS_LED) ||
 		    prefName.Equals(PREF_BIFF_ALWAYS_SHOW_ICON))
+		{
 			ApplyPrefs();
+		}
 	}
 	return NS_OK;
 }
@@ -421,7 +432,45 @@ void nsMessengerFreeDesktopIntegration::ApplyPrefs()
 {
 	mPrefBranch->GetBoolPref(PREF_BIFF_ALWAYS_SHOW_ICON, &mAlwaysShowBiffIcon);
 	mPrefBranch->GetBoolPref(PREF_BIFF_SHOW_ICON, &mShowBiffIcon);
-	mPrefBranch->GetBoolPref(PREF_BIFF_SHOW_ASUS_LED, &mShowAsusLed);
+	mPrefBranch->GetBoolPref(PREF_BIFF_SHOW_ASUS_LED, &mUseHwIndicator);
+	mPrefBranch->GetBoolPref(PREF_BIFF_USE_HW_INDICATOR, &mUseHwIndicator);
+	if (mUseHwIndicator)
+	{
+		nsXPIDLCString newHwIndicatorFile;
+		mPrefBranch->GetCharPref(PREF_BIFF_HW_INDICATOR_FILE, getter_Copies(newHwIndicatorFile));
+		if (newHwIndicatorFile != mHwIndicatorFile)
+		{
+			HideHwIndicator();
+			if (newHwIndicatorFile.IsEmpty())
+			{
+				mHwIndicatorFile = EmptyCString();
+				// Autodetect
+				for (unsigned int i=0;
+				     i<sizeof(HW_INDICATOR_CONTROL_FILENAMES)/sizeof(HW_INDICATOR_CONTROL_FILENAMES[0]);
+				     ++i)
+				{
+					const char* filename = HW_INDICATOR_CONTROL_FILENAMES[i];
+					if ((access(filename, R_OK | W_OK) == 0) ||
+					    ((errno != ENOENT) && (errno != ENOTDIR)))
+					{
+						mHwIndicatorFile = filename;
+					}
+				}
+			}
+		}
+		else
+		{
+			mHwIndicatorFile = newHwIndicatorFile;
+		}
+		if (mHasBiff)
+		{
+			ShowHwIndicator();
+		}
+	}
+	else
+	{
+		HideHwIndicator();
+	}
 	if (mAlwaysShowBiffIcon)
 	{
 		mShowBiffIcon = true; // force to true
@@ -430,10 +479,6 @@ void nsMessengerFreeDesktopIntegration::ApplyPrefs()
 	else if (!mShowBiffIcon || !mHasBiff)
 	{
 		RemoveBiffIcon();
-	}
-	if (!mShowAsusLed)
-	{
-		HideAsusLed();
 	}
 }
 
@@ -638,11 +683,11 @@ void nsMessengerFreeDesktopIntegration::RemoveBiffIcon()
 }
 
 NS_IMETHODIMP
-nsMessengerFreeDesktopIntegration::GetAsusLedStatus(PRInt16 *aAsusLedStatus)
+nsMessengerFreeDesktopIntegration::GetMailHwIndicatorStatus(PRInt16 *aHwIndicatorStatus)
 {
-	if (access(FILENAME_ASUS_LED, R_OK | W_OK) == 0)
+	if (access(mHwIndicatorFile, R_OK | W_OK) == 0)
 	{
-		*aAsusLedStatus = ASUS_LED_OK;
+		*aHwIndicatorStatus = MAIL_HW_INDICATOR_OK;
 	}
 	else
 	{
@@ -650,10 +695,10 @@ nsMessengerFreeDesktopIntegration::GetAsusLedStatus(PRInt16 *aAsusLedStatus)
 		{
 			case ENOENT:
 			case ENOTDIR:
-				*aAsusLedStatus = ASUS_LED_MISSING;
+				*aHwIndicatorStatus = MAIL_HW_INDICATOR_MISSING;
 				break;
 			default:
-				*aAsusLedStatus = ASUS_LED_INACCESSIBLE;
+				*aHwIndicatorStatus = MAIL_HW_INDICATOR_INACCESSIBLE;
 				break;
 		}
 	}
@@ -661,23 +706,29 @@ nsMessengerFreeDesktopIntegration::GetAsusLedStatus(PRInt16 *aAsusLedStatus)
 	return NS_OK;
 } 
 
-void nsMessengerFreeDesktopIntegration::ShowAsusLed()
+void nsMessengerFreeDesktopIntegration::ShowHwIndicator()
 {
-	int fd = open(FILENAME_ASUS_LED, O_WRONLY);
-	if (fd != -1)
+	if (!mHwIndicatorFile.IsEmpty())
 	{
-		write(fd, "1", 1);
-		close(fd);
+		int fd = open(mHwIndicatorFile, O_WRONLY);
+		if (fd != -1)
+		{
+			write(fd, "1", 1);
+			close(fd);
+		}
 	}
 }
 
-void nsMessengerFreeDesktopIntegration::HideAsusLed()
+void nsMessengerFreeDesktopIntegration::HideHwIndicator()
 {
-	int fd = open(FILENAME_ASUS_LED, O_WRONLY);
-	if (fd != -1)
+	if (!mHwIndicatorFile.IsEmpty())
 	{
-		write(fd, "0", 1);
-		close(fd);
+		int fd = open(mHwIndicatorFile, O_WRONLY);
+		if (fd != -1)
+		{
+			write(fd, "0", 1);
+			close(fd);
+		}
 	}
 }
 
@@ -708,9 +759,9 @@ void nsMessengerFreeDesktopIntegration::OnBiffChange()
 			g_object_unref(G_OBJECT(pixbuf));
 		}
 	      
-		if (mShowAsusLed)
+		if (mUseHwIndicator)
 		{
-			ShowAsusLed();
+			ShowHwIndicator();
 		}
 	}
 	else
@@ -733,7 +784,7 @@ void nsMessengerFreeDesktopIntegration::OnBiffChange()
 		{
 			RemoveBiffIcon();
 		}
-		HideAsusLed();
+		HideHwIndicator();
 	}
 }
 

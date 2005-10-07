@@ -87,8 +87,8 @@ private:
 	void SetToolTipString(const PRUnichar * aToolTipString);
 	void AddBiffIcon();
 	void RemoveBiffIcon();
-	void ShowAsusLed();
-	void HideAsusLed();
+	void ShowHwIndicator();
+	void HideHwIndicator();
 	// Called when mHasBiff is changed and responsible for changing the visual cues.
 	void OnBiffChange();
 	nsresult GetFirstFolderWithNewMail(char ** aFolderURI, char ** aMessageURI);
@@ -96,7 +96,9 @@ private:
 
 private:
 	nsCOMPtr <nsIPrefBranch> mPrefBranch;
-	PRBool mShowBiffIcon, mShowAsusLed, mAlwaysShowBiffIcon;
+	PRBool mShowBiffIcon, mUseHwIndicator, mAlwaysShowBiffIcon;
+	// Autodetected or manually-set file name for controlling the HW indicator.
+	nsXPIDLCString mHwIndicatorFile;
 	PRBool mHasBiff;
 	nsCOMPtr<nsISupportsArray> mFoldersWithNewMail;	// keep track of all the root folders with pending new mail
 	nsCOMPtr<nsIAtom> mBiffStateAtom;

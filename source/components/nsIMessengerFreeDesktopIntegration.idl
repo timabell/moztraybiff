@@ -1,14 +1,17 @@
-/**
+/*
+	This file describes an XPCOM interface accessible from
+	scripting and intended for communications between the
+	JS-based chrome and the native component.
  */
 
 #include "nsISupports.idl"
 
-[scriptable, uuid(0a07c43c-9253-11d9-b5b3-0020182e3f64)]
+[scriptable, uuid(8bb6e1ca-3b18-45dd-a397-2a20cc6c43ae)]
 interface nsIMessengerFreeDesktopIntegration : nsISupports
 {
-  const unsigned short ASUS_LED_OK = 0;
-  const unsigned short ASUS_LED_MISSING = 1;
-  const unsigned short ASUS_LED_INACCESSIBLE = 2;
+  const unsigned short MAIL_HW_INDICATOR_OK = 0;
+  const unsigned short MAIL_HW_INDICATOR_MISSING = 1;
+  const unsigned short MAIL_HW_INDICATOR_INACCESSIBLE = 2;
 
-  readonly attribute short asusLedStatus;
+  readonly attribute short mailHwIndicatorStatus;
 };
