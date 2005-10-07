@@ -1,6 +1,20 @@
+1.2 (2005-10-07):
+
 	* By popular request, added an option to always show the tray icon,
 	  regardless of whether there is new mail. Initial implementation was
 	  provided by Patrizio Bassi.
+	* Fixed French localization.
+	* Added Czech localization (coutersy of Jan Kratochvíl).
+	* Made the support for hardware new mail indicators
+	  (programmatically-cotnrollable LEDs found on computer cases)
+	  more generic and added support to the LED found on Acer
+	  laptops in addition to ASUS laptops (on Linux, with the
+	  appropriate driver installed).
+	  Expert users can use this feature for any other kind of
+	  indicators, as long as they're controllable by writing "0" or "1"
+	  to a "control file" (which usually resides in /proc on Linux
+	  systems). To choose the "control file", edit the
+	  "mail.biff.hw_indicator_file" preference.
 
 1.1 (2005-04-24):
 

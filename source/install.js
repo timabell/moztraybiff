@@ -21,8 +21,8 @@ try
 	const APP_DISPLAY_NAME = "New Mail Icon";
 	const APP_NAME = "traybiff";
 	const APP_PACKAGE = "/TrayBiff";
-	const APP_VERSION = "1.1";
-	const APP_LOCALES = new Array("en-US", "he-IL", "fr-FR", "it-IT", "ca-AD", "de-DE", "es-ES");
+	const APP_VERSION = "1.2";
+	const APP_LOCALES = new Array("en-US", "he-IL", "fr-FR", "it-IT", "ca-AD", "de-DE", "es-ES", "cs-CZ");
 	
 	initInstall(APP_DISPLAY_NAME, APP_PACKAGE, APP_VERSION);
 
