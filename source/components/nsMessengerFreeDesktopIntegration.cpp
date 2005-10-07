@@ -306,7 +306,8 @@ static void toggleMailWindow(const PRUnichar * aMailWindowName)
 nsMessengerFreeDesktopIntegration::nsMessengerFreeDesktopIntegration() :
 	mTrayIcon(NULL),
 	mTrayMenu(NULL),
-	mShowBiffIcon(PR_TRUE)
+	mShowBiffIcon(PR_TRUE),
+	mHasBiff(PR_FALSE)
 {
 	mBiffStateAtom = do_GetAtom("BiffState");
 	NS_NewISupportsArray(getter_AddRefs(mFoldersWithNewMail));
@@ -474,6 +475,7 @@ void nsMessengerFreeDesktopIntegration::ApplyPrefs()
 	if (mAlwaysShowBiffIcon)
 	{
 		mShowBiffIcon = true; // force to true
+		ClearToolTip();
 		AddBiffIcon();
 	}
 	else if (!mShowBiffIcon || !mHasBiff)
@@ -768,6 +770,7 @@ void nsMessengerFreeDesktopIntegration::OnBiffChange()
 	{
 		if (mAlwaysShowBiffIcon)
 		{
+			ClearToolTip();
 			GError* err = NULL;
 			GdkPixbuf* pixbuf = gdk_pixbuf_new_from_file(mBrandIconPath.get(), &err);
 			if (pixbuf != NULL)
@@ -844,6 +847,18 @@ void nsMessengerFreeDesktopIntegration::SetToolTipString(const PRUnichar * aTool
 
   NS_ConvertUCS2toUTF8 utf8TooltipString(aToolTipString);
   egg_status_icon_set_tooltip(mTrayIcon, static_cast<const gchar*>(utf8TooltipString.get()), NULL);
+}
+
+void nsMessengerFreeDesktopIntegration::ClearToolTip()
+{
+	if (mTrayIcon == NULL)
+	{
+		return;
+	}
+	
+	// This hardcoded "Mozilla" should be changed once we move
+	// to 1.8 branch and have nsIXULAppInfo.
+	egg_status_icon_set_tooltip(mTrayIcon, "Mozilla", NULL);
 }
 
 #ifndef MOZ_TRUNK

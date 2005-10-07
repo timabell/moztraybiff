@@ -85,6 +85,7 @@ private:
 	void ApplyPrefs();
 	void FillToolTipInfo();
 	void SetToolTipString(const PRUnichar * aToolTipString);
+	void ClearToolTip();
 	void AddBiffIcon();
 	void RemoveBiffIcon();
 	void ShowHwIndicator();
