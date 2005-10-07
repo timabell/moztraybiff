@@ -36,11 +36,12 @@ CXXFLAGS += \
 	-fno-rtti \
 	-fno-exceptions \
 	-fshort-wchar \
-	-fPIC
+	-fPIC \
+	-DMOZILLA_INTERNAL_API
 
 ifdef DEBUG
-	CXXFLAGS += -g
-	CFLAGS += -g
+	CXXFLAGS += -g -DDEBUG -D_DEBUG -DTRACING
+	CFLAGS += -g -DDEBUG -D_DEBUG -DTRACING
 else
 	CXXFLAGS += -O2
 	CFLAGS += -O2

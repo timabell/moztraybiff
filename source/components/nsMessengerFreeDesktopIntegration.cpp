@@ -795,6 +795,7 @@ void nsMessengerFreeDesktopIntegration::SetToolTipString(const PRUnichar * aTool
   egg_status_icon_set_tooltip(mTrayIcon, static_cast<const gchar*>(utf8TooltipString.get()), NULL);
 }
 
+#ifndef MOZ_TRUNK
 NS_IMETHODIMP
 nsMessengerFreeDesktopIntegration::OnItemPropertyFlagChanged(nsISupports *item, nsIAtom *property, PRUint32 oldFlag, PRUint32 newFlag)
 {
@@ -844,18 +845,25 @@ nsMessengerFreeDesktopIntegration::OnItemPropertyFlagChanged(nsISupports *item, 
 			// Suggests the icon's default action (which is performed by OnBiffIconActivate)
 			mHasBiff = true;
 			OnBiffChange();
-    }
-    else if (newFlag == nsIMsgFolder::nsMsgBiffState_NoMail)
-    {
+		}
+		else if (newFlag == nsIMsgFolder::nsMsgBiffState_NoMail)
+		{
 			mFoldersWithNewMail->Clear();
 			// Suggests the icon's default action (which is performed by OnBiffIconActivate)
 			mHasBiff = false;
 			OnBiffChange();
-    }
-  } // if the biff property changed
+		}
+	} // if the biff property changed
   
-  return NS_OK;
+	return NS_OK;
 }
+#else
+NS_IMETHODIMP
+nsMessengerFreeDesktopIntegration::OnItemPropertyFlagChanged(nsIMsgDBHdr *item, nsIAtom *property, PRUint32 oldFlag, PRUint32 newFlag)
+{
+	return NS_OK;
+}
+#endif
 
 NS_IMETHODIMP
 nsMessengerFreeDesktopIntegration::OnItemAdded
@@ -887,7 +895,63 @@ nsMessengerFreeDesktopIntegration::OnItemIntPropertyChanged
 (nsISupports*, nsIAtom*, int, int)
 #endif
 {
-  return NS_OK;
+	#ifdef MOZ_TRUNK
+	// if we got new mail show a icon in the system tray
+	if (mBiffStateAtom == aProperty && mFoldersWithNewMail)
+	{
+		nsCOMPtr<nsIMsgFolder> folder = do_QueryInterface(aItem);
+		NS_ENSURE_TRUE(folder, NS_OK);
+
+		if (aNewValue == nsIMsgFolder::nsMsgBiffState_NewMail) 
+		{
+			// if the icon is not already visible, only show a system tray icon iff 
+			// we are performing biff (as opposed to the user getting new mail)
+			PRBool performingBiff = PR_FALSE;
+			nsCOMPtr<nsIMsgIncomingServer> server;
+			folder->GetServer(getter_AddRefs(server));
+			if (server)
+				server->GetPerformingBiff(&performingBiff);
+			if (!performingBiff) 
+				return NS_OK; // kick out right now...
+			nsCOMPtr<nsIWeakReference> weakFolder = do_GetWeakReference(folder); 
+
+			// remove the element if it is already in the array....
+			PRUint32 count = 0;
+			PRUint32 index = 0; 
+			mFoldersWithNewMail->Count(&count);
+			nsCOMPtr<nsISupports> supports;
+			nsCOMPtr<nsIMsgFolder> oldFolder;
+			nsCOMPtr<nsIWeakReference> weakReference;
+			for (index = 0; index < count; index++)
+			{
+				supports = getter_AddRefs(mFoldersWithNewMail->ElementAt(index));
+				weakReference = do_QueryInterface(supports);
+				oldFolder = do_QueryReferent(weakReference);
+				if (oldFolder == folder) // if they point to the same folder
+					break;
+				oldFolder = nsnull;
+			}
+
+			if (oldFolder)
+				mFoldersWithNewMail->ReplaceElementAt(weakFolder, index);
+			else
+				mFoldersWithNewMail->AppendElement(weakFolder);
+
+			// Suggests the icon's default action (which is performed by OnBiffIconActivate)
+			mHasBiff = true;
+			OnBiffChange();
+		}
+		else if (aNewValue == nsIMsgFolder::nsMsgBiffState_NoMail)
+		{
+			mFoldersWithNewMail->Clear();
+			// Suggests the icon's default action (which is performed by OnBiffIconActivate)
+			mHasBiff = false;
+			OnBiffChange();
+		}
+	} // if the biff property changed
+	#endif
+	
+	return NS_OK;
 }
 
 NS_IMETHODIMP
