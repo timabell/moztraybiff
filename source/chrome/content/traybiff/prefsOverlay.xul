@@ -9,15 +9,17 @@
 	<script type="application/x-javascript">
 	<![CDATA[
 		_elementIDs.push("newMailNotificationShowIcon");
-		_elementIDs.push("newMailNotificationShowAsusLed");
+		_elementIDs.push("newMailNotificationAlwaysShowIcon");
+		_elementIDs.push("newMailNotificationUseHwIndicator");
 	]]>
 	</script>
 
 	<!-- tray icon toggle -->
 	<groupbox id="newMessagesArrivePrefs">
 		<vbox align="start">
-			<checkbox id="newMailNotificationShowIcon" label="&showTrayIconForNewMessages.label;" pref="true" preftype="bool" prefstring="mail.biff.show_icon" prefattribute="checked"/>
-			<checkbox id="newMailNotificationShowAsusLed" label="&showAsusLedForNewMessages.label;" pref="true" preftype="bool" prefstring="mail.biff.show_asus_led" prefattribute="checked"/>
+			<checkbox id="newMailNotificationShowIcon" label="&showTrayIconForNewMessages.label;" pref="true" preftype="bool" prefstring="mail.biff.show_icon" onclick="document.getElementById('newMailNotificationAlwaysShowIcon').disabled = this.checked;" prefattribute="checked"/>
+			<checkbox id="newMailNotificationAlwaysShowIcon" label="&alwaysShowTrayIcon.label;" pref="true" preftype="bool" prefstring="mail.biff.always_show_icon" prefattribute="checked"/>
+			<checkbox id="newMailNotificationUseHwIndicator" label="&useHwIndicator.label;" pref="true" preftype="bool" prefstring="mail.biff.use_hw_indicator" prefattribute="checked"/>
 		</vbox>
 	</groupbox>
 
