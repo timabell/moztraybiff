@@ -455,6 +455,7 @@ void nsMessengerFreeDesktopIntegration::ApplyPrefs()
 					    ((errno != ENOENT) && (errno != ENOTDIR)))
 					{
 						mHwIndicatorFile = filename;
+						break;
 					}
 				}
 			}
