@@ -6,7 +6,7 @@
 
 <overlay id="prefsOverlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-	<script type="application/x-javascript" id="sonuvabitch">
+	<script type="application/x-javascript">
 	<![CDATA[
 		_elementIDs.push("newMailNotificationShowIcon");
 		_elementIDs.push("newMailNotificationShowAsusLed");
