@@ -1,1 +1,3 @@
-<!ENTITY newMailNotificationShowIcon.label	"Afficher l'icône de notification">
+<!ENTITY newMailNotificationShowIcon.label "Afficher l'icône de notification">
+<!ENTITY alwaysShowTrayIcon.label "Toujours afficher l'icône de notification (donne un accès rapide au courrier)">
+<!ENTITY useHwIndicator.label "Utiliser l'indicateur de nouveau message intégré sur les systèmes le possédant">
