@@ -1,1 +1,3 @@
-<!ENTITY newMailNotificationShowIcon.label	"Mostrar ícono de notificación de nuevo mensaje">
+<!ENTITY newMailNotificationShowIcon.label "Mostrar ícono de notificación de nuevo mensaje">
+<!ENTITY alwaysShowTrayIcon.label "Siempre mostrar ícono en la barra de tareas (proveyendo acceso rápido al email)">
+<!ENTITY useHwIndicator.label "Usar indicador de nuevo-email incluído en computadores que lo posean">

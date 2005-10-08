@@ -1,5 +1,5 @@
 <!ENTITY dialog.title "Ícono de Nuevo Mensaje">
 <!ENTITY features.caption  "Características">
 <!ENTITY showTrayIconForNewMessages.label  "Mostrar ícono cuando arriven nuevos mensajes">
-<!ENTITY showAsusLedForNewMessages.label  "Encender el LED de nuevo mensaje en computadores ASUS cuando arriven nuevos mensajes">
-<!ENTITY alwaysShowTrayIcon.label  "Always show tray icon (providing quick access to Thunderbird)">
+<!ENTITY alwaysShowTrayIcon.label "Siempre mostrar ícono en la barra de tareas (proveyendo acceso rápido a Thunderbird)">
+<!ENTITY useHwIndicator.label "Usar indicador de nuevo-email incluído en computadores que lo posean">
