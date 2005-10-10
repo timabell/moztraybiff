@@ -1,5 +1,5 @@
 <!ENTITY dialog.title   "Icona de nou correu">
 <!ENTITY features.caption  "Característiques">
 <!ENTITY showTrayIconForNewMessages.label  "Mostra una icona a la safata quan arribin nous missatges">
-<!ENTITY showAsusLedForNewMessages.label  "Light the New Mail Led on ASUS computers when new messages arrive">
-<!ENTITY alwaysShowTrayIcon.label  "Always show tray icon (providing quick access to Thunderbird)">
+<!ENTITY alwaysShowTrayIcon.label  "Mostra sempre una icona a la safata (permet un accés ràpid al Thunderbird)">
+<!ENTITY useHwIndicator.label "Utilitza l'indicador de nou correu a aquells ordinadors que ho tinguin">

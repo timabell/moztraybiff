@@ -1,1 +1,3 @@
-<!ENTITY newMailNotificationShowIcon.label	"Mostra una icona a la safata">
+<!ENTITY newMailNotificationShowIcon.label "Mostra una icona a la safata">
+<!ENTITY alwaysShowTrayIcon.label "Mostra sempre una icona a la safata (permet un accés ràpid a la Missatgeria)">
+<!ENTITY useHwIndicator.label "Utilitza l'indicador de nou correu a aquells ordinadors que ho tinguin">
