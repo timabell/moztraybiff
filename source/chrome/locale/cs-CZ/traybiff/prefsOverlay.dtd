@@ -1,1 +1,3 @@
-<!ENTITY newMailNotificationShowIcon.label	"Zobrazovat ikonu v systémové části panelu">
+<!ENTITY newMailNotificationShowIcon.label "Zobrazovat ikonu v systémové části panelu, pokud jsou nové zprávy">
+<!ENTITY alwaysShowTrayIcon.label "Vždy zobrazovat ikonu v systémové části panelu (pro rychlý přístup k emailu)">
+<!ENTITY useHwIndicator.label "Použít 'new mail indicator' na počítačích, které to podporují">
