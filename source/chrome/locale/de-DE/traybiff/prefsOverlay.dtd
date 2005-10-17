@@ -1,1 +1,3 @@
-<!ENTITY newMailNotificationShowIcon.label	"Tray Icon anzeigen">
+<!ENTITY newMailNotificationShowIcon.label "Tray Icon anzeigen">
+<!ENTITY alwaysShowTrayIcon.label "Tray Icon immer anzeigen (für schnellen Zugriff auf Thunderbird)">
+<!ENTITY useHwIndicator.label "Eingebaute neue Mail Anzeige verwenden, falls vorhanden.">
