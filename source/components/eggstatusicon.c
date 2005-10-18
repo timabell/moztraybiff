@@ -23,6 +23,7 @@
 
 #include <string.h>
 #include <libintl.h>
+#include <math.h>
 
 #include "eggstatusicon.h"
 
@@ -506,6 +507,29 @@ egg_status_icon_update_image (EggStatusIcon *status_icon)
 	      }
 
 	    gtk_image_set_from_pixbuf (GTK_IMAGE (status_icon->priv->image), scaled);
+	    
+            /* Sets the icon's transparency mask as the window's shape mask.
+               Note: This doesn't handle translucency (partial transparency). */
+            gint image_offset_x, image_offset_y;
+            /* No way to know the image's real offset but by calculating ourselves. */
+            {
+              gfloat xalign, yalign;
+              gint xpad, ypad;
+              GtkWidget* image = status_icon->priv->image;
+              gtk_misc_get_padding(GTK_MISC(image), &xpad, &ypad);
+              gtk_misc_get_alignment(GTK_MISC(image), &xalign, &yalign);
+              image_offset_x = floor(image->allocation.x + xpad + ((image->allocation.width - image->requisition.width) * xalign));
+              image_offset_y = floor(image->allocation.y + ypad + ((image->allocation.height - image->requisition.height) * yalign));
+            }
+            GdkBitmap* scaled_mask = NULL;
+            gdk_pixbuf_render_pixmap_and_mask(scaled, NULL, &scaled_mask, 0);
+            if (scaled_mask)
+            {
+               /* It's only possible to set shape masks on real windows, so we have to set an offseted shape mask. */
+               gtk_widget_shape_combine_mask(GTK_WIDGET(status_icon->priv->tray_icon), scaled_mask, image_offset_x, image_offset_y);
+               g_object_unref(scaled_mask);
+            }
+	    
 
 	    g_object_unref (scaled);
 	  }
