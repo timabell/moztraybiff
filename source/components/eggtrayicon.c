@@ -370,11 +370,6 @@ egg_tray_icon_realize (GtkWidget *widget)
   /* Add a root window filter so that we get changes on MANAGER */
   gdk_window_add_filter (root_window,
 			 egg_tray_icon_manager_filter, icon);
-
-  g_assert(!GTK_WIDGET_NO_WINDOW (widget));
-  gtk_widget_set_double_buffered (widget, FALSE);
-  gtk_widget_set_app_paintable (widget, TRUE);
-  gdk_window_set_back_pixmap (widget->window, NULL, TRUE);
 }
 
 
