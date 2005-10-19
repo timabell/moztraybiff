@@ -27,6 +27,9 @@ export DEBUG MOZ_TRUNK MOZILLA_PLATFORM REAL_CONFIG
 
 all: subdirs ${XPI_FILENAME}
 
+distclean: clean
+	find -name 'CVS' -or -name '*~' -or -name '.#' -exec rm -rf {} \;
+
 clean:
 	[ -e *.xpi ] && rm *.xpi; true
 	[ -e xpi/components ] && rm -rf xpi/components; true
