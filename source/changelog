@@ -15,7 +15,7 @@
 	  to a "control file" (which usually resides in /proc on Linux
 	  systems). To choose the "control file", edit the
 	  "mail.biff.hw_indicator_file" preference.
-	* Switched to a more orthodox method of keeping the icon's
+	* Added a more orthodox method of keeping the icon's
           transparency by using the SHAPE extension.
 	  For details, see GNOME bug #150726.
 
