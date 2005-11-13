@@ -33,6 +33,7 @@ distclean: clean
 clean:
 	[ -e *.xpi ] && rm *.xpi; true
 	[ -e xpi/components ] && rm -rf xpi/components; true
+	[ -e install.rdf ] && rm install.rdf; true
 	for DIR in ${SUBDIRS}; do \
 		${MAKE} -C $$DIR $@; \
 	done
