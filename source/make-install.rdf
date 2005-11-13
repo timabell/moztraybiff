@@ -7,6 +7,12 @@ $machine =~ /^(.*?)\-/
 	or die "Unable to parse machine name";
 my $arch = $1;
 
+my $version = `$ENV{'REAL_CONFIG'} --version`
+	or die "Unable to determine target version";
+chomp $version;
+my $minVersion = $version;
+my $maxVersion = $version;
+
 # Use a different UUID for each architecture so we could differentiate
 # the architectures in install.rdf.
 my $uuid;
@@ -30,6 +36,8 @@ open(OUT, ">install.rdf")
 while(<IN>)
 {
 	s/%uuid%/$uuid/g;
+	s/%minVersion%/$minVersion/g;
+	s/%maxVersion%/$minVersion/g;
 	print(OUT)
 		or die $!;
 }
