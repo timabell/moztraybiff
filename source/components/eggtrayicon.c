@@ -338,6 +338,7 @@ egg_tray_icon_realize (GtkWidget *widget)
   Display *xdisplay;
   char buffer[256];
   GdkWindow *root_window;
+  GtkStyle *style;
 
   if (GTK_WIDGET_CLASS (parent_class)->realize)
     GTK_WIDGET_CLASS (parent_class)->realize (widget);
@@ -366,6 +367,14 @@ egg_tray_icon_realize (GtkWidget *widget)
   egg_tray_icon_update_manager_window (icon);
 
   root_window = gdk_screen_get_root_window (screen);
+
+  /* set background pixmap from parent */
+  gtk_widget_set_double_buffered (widget, FALSE);
+  style = gtk_style_copy (widget->style);
+  style->bg_pixmap[GTK_STATE_NORMAL] = (GdkPixmap*) GDK_PARENT_RELATIVE;
+  gtk_widget_set_style (widget, style);
+  g_object_unref (style);
+  gtk_style_set_background (widget->style, widget->window, GTK_STATE_NORMAL);
   
   /* Add a root window filter so that we get changes on MANAGER */
   gdk_window_add_filter (root_window,
