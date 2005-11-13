@@ -264,6 +264,35 @@ static void openMailWindow(const PRUnichar * aMailWindowName, const char * aFold
 	}
 }
 
+enum MailWindowVisibilityEnum
+{
+	MAIL_WINDOW_NOT_FOUND,
+	MAIL_WINDOW_HIDDEN,
+	MAIL_WINDOW_VISIBLE
+};
+
+static MailWindowVisibilityEnum isMailWindowVisible(const PRUnichar * aMailWindowName)
+{
+	nsCOMPtr<nsIDOMWindowInternal> domWindow;
+	
+	nsCOMPtr<nsIWindowMediator> mediator ( do_GetService(NS_WINDOWMEDIATOR_CONTRACTID) );
+	NS_ASSERTION(mediator, "no mediator");
+	if (aMailWindowName != NULL)
+	{
+		mediator->GetMostRecentWindow(aMailWindowName, getter_AddRefs(domWindow));
+		if (domWindow)
+		{
+			GdkWindow* pGdkWindow = GetGdkWindowForDOMWindow(domWindow);
+			if (GDK_IS_WINDOW(pGdkWindow))
+			{
+				GdkWindow * root = gdk_window_get_toplevel(pGdkWindow);
+				return gdk_window_is_visible(root) ? MAIL_WINDOW_VISIBLE : MAIL_WINDOW_HIDDEN;
+			}
+		}
+	}
+	return MAIL_WINDOW_NOT_FOUND;
+}
+
 static void toggleMailWindow(const PRUnichar * aMailWindowName)
 {
 	nsCOMPtr<nsIDOMWindowInternal> domWindow;
@@ -305,7 +334,6 @@ static void toggleMailWindow(const PRUnichar * aMailWindowName)
 
 nsMessengerFreeDesktopIntegration::nsMessengerFreeDesktopIntegration() :
 	mTrayIcon(NULL),
-	mTrayMenu(NULL),
 	mShowBiffIcon(PR_TRUE),
 	mHasBiff(PR_FALSE)
 {
@@ -324,9 +352,6 @@ nsMessengerFreeDesktopIntegration::~nsMessengerFreeDesktopIntegration()
 {
 	RemoveBiffIcon();
 	HideHwIndicator();
-
-	if (mTrayMenu != NULL)
-		gtk_widget_destroy(mTrayMenu);
 }
 
 NS_IMPL_ADDREF(nsMessengerFreeDesktopIntegration)
@@ -355,6 +380,9 @@ nsMessengerFreeDesktopIntegration::Init()
 	 The following code is ripped from chatzilla-service.js.
 	*/
 	// Checking if we're disabled in the Chrome Registry.
+// Trunk builds no longer have rdf:chrome, and in addition, they avoid loading the component
+// when the extension is disabled so this check is no longer needed.
+#ifndef MOZ_TRUNK 
 	nsCOMPtr<nsIRDFService> rdfSvc = do_GetService("@mozilla.org/rdf/rdf-service;1", &rv);
 	NS_ENSURE_SUCCESS(rv, rv);
 	nsCOMPtr<nsIRDFDataSource> rdfDS;
@@ -374,6 +402,7 @@ nsMessengerFreeDesktopIntegration::Init()
 		// The chrome for this extension is marked as disabled.
 		return NS_ERROR_FAILURE;
 	}
+#endif
 
 	// get pref service
 	nsCOMPtr<nsIPrefService> prefService;
@@ -735,18 +764,41 @@ void nsMessengerFreeDesktopIntegration::HideHwIndicator()
 	}
 }
 
-void nsMessengerFreeDesktopIntegration::OnBiffIconActivate()
+void nsMessengerFreeDesktopIntegration::OnActionDefault()
 {
 	if (mHasBiff)
 	{
-		nsXPIDLCString folderURI, messageURI;
-		GetFirstFolderWithNewMail(getter_Copies(folderURI), getter_Copies(messageURI));
-		openMailWindow(NS_LITERAL_STRING("mail:3pane").get(), folderURI, messageURI);
+		OnActionReadMail();
 	}
 	else
 	{
-		toggleMailWindow(NS_LITERAL_STRING("mail:3pane").get());
+		OnActionToggleWindow();
 	}
+}
+
+void nsMessengerFreeDesktopIntegration::OnActionReadMail()
+{
+	nsXPIDLCString folderURI, messageURI;
+	GetFirstFolderWithNewMail(getter_Copies(folderURI), getter_Copies(messageURI));
+	openMailWindow(NS_LITERAL_STRING("mail:3pane").get(), folderURI, messageURI);
+}
+
+void nsMessengerFreeDesktopIntegration::OnActionToggleWindow()
+{
+	toggleMailWindow(NS_LITERAL_STRING("mail:3pane").get());
+}
+
+void nsMessengerFreeDesktopIntegration::OnActionHideIcon()
+{
+	if (mHasBiff)
+	{
+		mPrefBranch->SetBoolPref(PREF_BIFF_SHOW_ICON, PR_FALSE);
+	}
+	else
+	{
+		mPrefBranch->SetBoolPref(PREF_BIFF_ALWAYS_SHOW_ICON, PR_FALSE);
+	}
+	// TODO: This should ultimately popup an informational message box.
 }
 
 void nsMessengerFreeDesktopIntegration::OnBiffChange()
@@ -792,37 +844,63 @@ void nsMessengerFreeDesktopIntegration::OnBiffChange()
 	}
 }
 
-void nsMessengerFreeDesktopIntegration::OnBiffIconPopupMenu(unsigned int button, unsigned int activateTime)
+void nsMessengerFreeDesktopIntegration::OnActionPopupMenu(unsigned int button, unsigned int activateTime)
 {
-  // Create the menu first time it's needed.
-  if (mTrayMenu == NULL)
-  {
-     mTrayMenu = gtk_menu_new();
-     GtkWidget *entry;
+	GtkWidget* pTrayMenu = gtk_menu_new();
+	GtkWidget *entry;
 
-     // Default values for menu item strings
-     nsXPIDLString menuItemReadMail;
-     menuItemReadMail.Assign(NS_LITERAL_STRING("Read mail..."));
-     nsXPIDLString menuItemHide;
-     menuItemHide.Assign(NS_LITERAL_STRING("Hide"));
+	// Default values for menu item strings
+	nsXPIDLString menuItemReadMail;
+	menuItemReadMail.Assign(NS_LITERAL_STRING("Read mail..."));
+	nsXPIDLString menuItemNewWindow;
+	menuItemNewWindow.Assign(NS_LITERAL_STRING("New window"));
+	nsXPIDLString menuItemRestoreWindow;
+	menuItemRestoreWindow.Assign(NS_LITERAL_STRING("Restore window"));
+	nsXPIDLString menuItemHideWindow;
+	menuItemHideWindow.Assign(NS_LITERAL_STRING("Hide window"));
+	nsXPIDLString menuItemHideIcon;
+	menuItemHideIcon.Assign(NS_LITERAL_STRING("Hide icon"));
 
-     // Retrieve menu item localizations from the string bundle, if possible
-     nsCOMPtr<nsIStringBundle> bundle; 
-     GetStringBundle(STRING_BUNDLE_TRAYBIFF, getter_AddRefs(bundle));
-     if (bundle)
-     { 
-       bundle->GetStringFromName(NS_LITERAL_STRING("trayMenu_ReadMail").get(), getter_Copies(menuItemReadMail));
-       bundle->GetStringFromName(NS_LITERAL_STRING("trayMenu_Hide").get(), getter_Copies(menuItemHide));
-     }
+	// Retrieve menu item localizations from the string bundle, if possible
+	nsCOMPtr<nsIStringBundle> bundle; 
+	GetStringBundle(STRING_BUNDLE_TRAYBIFF, getter_AddRefs(bundle));
+	NS_ASSERTION(bundle, "no string bundle");
+	if (bundle)
+	{ 
+		bundle->GetStringFromName(NS_LITERAL_STRING("trayMenu_ReadMail").get(), getter_Copies(menuItemReadMail));
+		bundle->GetStringFromName(NS_LITERAL_STRING("trayMenu_NewWindow").get(), getter_Copies(menuItemNewWindow));
+		bundle->GetStringFromName(NS_LITERAL_STRING("trayMenu_RestoreWindow").get(), getter_Copies(menuItemRestoreWindow));
+		bundle->GetStringFromName(NS_LITERAL_STRING("trayMenu_HideWindow").get(), getter_Copies(menuItemHideWindow));
+		bundle->GetStringFromName(NS_LITERAL_STRING("trayMenu_HideIcon").get(), getter_Copies(menuItemHideIcon));
+	}
 
-     entry = gtk_menu_item_new_with_label(NS_ConvertUTF16toUTF8(menuItemReadMail).get());
-     g_signal_connect(G_OBJECT(entry), "activate", G_CALLBACK(TrayIconActivate), this);
-     gtk_menu_shell_append(GTK_MENU_SHELL(mTrayMenu), entry);
+	if (mHasBiff)
+	{
+		entry = gtk_menu_item_new_with_label(NS_ConvertUTF16toUTF8(menuItemReadMail).get());
+		g_signal_connect(G_OBJECT(entry), "activate", G_CALLBACK(MenuReadMail), this);
+		gtk_menu_shell_append(GTK_MENU_SHELL(pTrayMenu), entry);
+	}
+	switch (isMailWindowVisible(NS_LITERAL_STRING("mail:3pane").get()))
+	{
+	case MAIL_WINDOW_NOT_FOUND:
+		entry = gtk_menu_item_new_with_label(NS_ConvertUTF16toUTF8(menuItemNewWindow).get());
+		break;
+	case MAIL_WINDOW_HIDDEN:
+		entry = gtk_menu_item_new_with_label(NS_ConvertUTF16toUTF8(menuItemRestoreWindow).get());
+		break;
+	case MAIL_WINDOW_VISIBLE:
+		entry = gtk_menu_item_new_with_label(NS_ConvertUTF16toUTF8(menuItemHideWindow).get());
+		break;
+	}
+	g_signal_connect(G_OBJECT(entry), "activate", G_CALLBACK(MenuToggleWindow), this);
+	gtk_menu_shell_append(GTK_MENU_SHELL(pTrayMenu), entry);
+	entry = gtk_menu_item_new_with_label(NS_ConvertUTF16toUTF8(menuItemHideIcon).get());
+	g_signal_connect(G_OBJECT(entry), "activate", G_CALLBACK(MenuHideIcon), this);
+	gtk_menu_shell_append(GTK_MENU_SHELL(pTrayMenu), entry);
 
-     gtk_widget_show_all(mTrayMenu);
-  }
-
-  gtk_menu_popup(GTK_MENU(mTrayMenu), NULL, NULL, NULL, NULL, button, activateTime);
+	gtk_widget_show_all(pTrayMenu);
+	g_signal_connect(G_OBJECT(pTrayMenu), "selection-done", G_CALLBACK(TrayIconPopupMenuSelectionDone), this);
+	gtk_menu_popup(GTK_MENU(pTrayMenu), NULL, NULL, NULL, NULL, button, activateTime);
 }
 
 /*
@@ -832,22 +910,42 @@ void nsMessengerFreeDesktopIntegration::OnBiffIconPopupMenu(unsigned int button,
  
 void nsMessengerFreeDesktopIntegration::TrayIconActivate(GtkWidget *trayIcon, void *data)
 {
-   reinterpret_cast<nsMessengerFreeDesktopIntegration*>(data)->OnBiffIconActivate();
+	reinterpret_cast<nsMessengerFreeDesktopIntegration*>(data)->OnActionDefault();
 }
 
 void nsMessengerFreeDesktopIntegration::TrayIconPopupMenu(GtkWidget *trayIcon, guint button, guint activateTime, void *data)
 {
-   reinterpret_cast<nsMessengerFreeDesktopIntegration*>(data)->OnBiffIconPopupMenu(button, activateTime);
+	reinterpret_cast<nsMessengerFreeDesktopIntegration*>(data)->OnActionPopupMenu(button, activateTime);
+}
+
+void nsMessengerFreeDesktopIntegration::TrayIconPopupMenuSelectionDone(GtkMenuShell *menushell, void *data)
+{
+	gtk_widget_destroy(GTK_WIDGET(menushell));
+}
+
+void nsMessengerFreeDesktopIntegration::MenuHideIcon(GtkMenuItem *menuItem, void *data)
+{
+	reinterpret_cast<nsMessengerFreeDesktopIntegration*>(data)->OnActionHideIcon();
+}
+
+void nsMessengerFreeDesktopIntegration::MenuReadMail(GtkMenuItem *menuItem, void *data)
+{
+	reinterpret_cast<nsMessengerFreeDesktopIntegration*>(data)->OnActionReadMail();
+}
+
+void nsMessengerFreeDesktopIntegration::MenuToggleWindow(GtkMenuItem *menuItem, void *data)
+{
+	reinterpret_cast<nsMessengerFreeDesktopIntegration*>(data)->OnActionToggleWindow();
 }
 
 void nsMessengerFreeDesktopIntegration::SetToolTipString(const PRUnichar * aToolTipString)
 {
-  if ((aToolTipString == NULL) || 
-      (mTrayIcon == NULL))
-     return;
-
-  NS_ConvertUCS2toUTF8 utf8TooltipString(aToolTipString);
-  egg_status_icon_set_tooltip(mTrayIcon, static_cast<const gchar*>(utf8TooltipString.get()), NULL);
+	if (aToolTipString == NULL || mTrayIcon == NULL)
+	{
+		return;
+	}
+	NS_ConvertUCS2toUTF8 utf8TooltipString(aToolTipString);
+	egg_status_icon_set_tooltip(mTrayIcon, static_cast<const gchar*>(utf8TooltipString.get()), NULL);
 }
 
 void nsMessengerFreeDesktopIntegration::ClearToolTip()

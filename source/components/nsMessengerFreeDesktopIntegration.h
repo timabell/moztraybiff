@@ -106,21 +106,29 @@ private:
 
 // Event handlers which map directly to GTK+ events on the tray icon.
 private:
-	// 1st buttom clicked on the tray icon.
-	void OnBiffIconActivate();
+	// Default action (tray icon left clicked etc.)
+	void OnActionDefault();
 	// 3rd button clicked on the tray icon.
-	void OnBiffIconPopupMenu(unsigned int button, unsigned int activateTime);
+	void OnActionPopupMenu(unsigned int button, unsigned int activateTime);
+	// Read Mail chosen in popup menu.
+	void OnActionReadMail();
+	// Toggle Window chosen in popup menu.
+	void OnActionToggleWindow();
+	// Hide Icon chosen in popup menu.
+	void OnActionHideIcon();
 
 // GTK+ signal handlers
 private:
-	static void TrayIconPopupMenu(GtkWidget *trayIcon, guint button, guint activateTime, void *data);
 	static void TrayIconActivate(GtkWidget *trayIcon, void *data);
-	static void TrayIconHide(GtkMenuItem *menuItem, void *data);
+	static void TrayIconPopupMenu(GtkWidget *trayIcon, guint button, guint activateTime, void *data);
+	static void TrayIconPopupMenuSelectionDone(GtkMenuShell *menushell, void *data);
+	static void MenuReadMail(GtkMenuItem *menuItem, void *data);
+	static void MenuToggleWindow(GtkMenuItem *menuItem, void *data);
+	static void MenuHideIcon(GtkMenuItem *menuItem, void *data);
   
 // GTK+ tray icon-related members
 private:
 	EggStatusIcon* mTrayIcon;
-	GtkWidget* mTrayMenu;
 	
 protected:
 	nsCAutoString mBrandIconPath;
