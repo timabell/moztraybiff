@@ -423,7 +423,7 @@ nsMessengerFreeDesktopIntegration::Init()
 	// because we care about biff notifications
 	nsCOMPtr <nsIMsgMailSession> mailSession = do_GetService(NS_MSGMAILSESSION_CONTRACTID, &rv);
 	NS_ENSURE_SUCCESS(rv,rv);
-	rv = mailSession->AddFolderListener(this, nsIFolderListener::propertyFlagChanged);
+	rv = mailSession->AddFolderListener(this, nsIFolderListener::propertyFlagChanged | nsIFolderListener::boolPropertyChanged | nsIFolderListener::intPropertyChanged);
 	NS_ENSURE_SUCCESS(rv,rv);
 	// In the future, we might want to add more properties here, to enable us to display
 	// the unread message count etc.
