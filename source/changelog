@@ -1,5 +1,6 @@
 1.2 (2005-10-07):
 
+	* Support for Thunderbird 1.5.
 	* By popular request, added an option to always show the tray icon,
 	  regardless of whether there is new mail. Initial implementation was
 	  provided by Patrizio Bassi.
