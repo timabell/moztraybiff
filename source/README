@@ -2,7 +2,8 @@ Mozilla New Mail Icon ("Biff") extension
 
 VERSION: 1.2
 AUTHOR: Ilya Konstantinov
-LICENSE: Unclear at this point. Includes code from libegg and Mozilla. Might be illegal.
+LICENSE: GNU General Public License
+         (see COPYING for the complete license text)
 
 This Mozilla extension makes Mozilla Mail and Thunderbird display an icon in the system tray
 when new mail arrives. It supports the standard (FreeDesktop.org) system tray, as used by GNOME,
