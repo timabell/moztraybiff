@@ -462,11 +462,11 @@ nsMessengerFreeDesktopIntegration::Observe(nsISupports *aSubject, const char *aT
 		prefName.AppendWithConversion(aData);
 		
 		if (prefName.Equals(PREF_BIFF_SHOW_ICON) ||
+		    prefName.Equals(PREF_BIFF_ALWAYS_SHOW_ICON) ||
 		    prefName.Equals(PREF_BIFF_USE_HW_INDICATOR) ||
 		    prefName.Equals(PREF_BIFF_HW_INDICATOR_FILE) ||
 		    // for backward compatibility:
-		    prefName.Equals(PREF_BIFF_SHOW_ASUS_LED) ||
-		    prefName.Equals(PREF_BIFF_ALWAYS_SHOW_ICON))
+		    prefName.Equals(PREF_BIFF_SHOW_ASUS_LED))
 		{
 			ApplyPrefs();
 		}
@@ -524,6 +524,7 @@ void nsMessengerFreeDesktopIntegration::ApplyPrefs()
 	{
 		mShowBiffIcon = true; // force to true
 		AddBiffIcon();
+		OnBiffChange();
 		ClearToolTip();
 	}
 	else if (!mShowBiffIcon || !mHasBiff)
@@ -828,19 +829,28 @@ void nsMessengerFreeDesktopIntegration::OnBiffChange()
 	}
 	else
 	{
-		if (mAlwaysShowBiffIcon && !mBrandIconPath.IsEmpty())
+		if (mAlwaysShowBiffIcon)
 		{
-			ClearToolTip();
-			GError* err = NULL;
-			GdkPixbuf* pixbuf = gdk_pixbuf_new_from_file(mBrandIconPath.get(), &err);
-			if (pixbuf != NULL)
+			if (!mBrandIconPath.IsEmpty())
 			{
-				egg_status_icon_set_from_pixbuf(mTrayIcon, pixbuf);
-				g_object_unref(G_OBJECT(pixbuf));
+				ClearToolTip();
+				GError* err = NULL;
+				GdkPixbuf* pixbuf = gdk_pixbuf_new_from_file(mBrandIconPath.get(), &err);
+				if (pixbuf != NULL)
+				{
+					egg_status_icon_set_from_pixbuf(mTrayIcon, pixbuf);
+					g_object_unref(G_OBJECT(pixbuf));
+				}
+				else
+				{
+					fprintf (stderr, "mozTrayBiff: Error loading application icon: %s\n", err->message);
+					RemoveBiffIcon();
+				}
 			}
 			else
 			{
-				fprintf (stderr, "mozTrayBiff: Error loading application icon: %s\n", err->message);
+				fprintf(stderr, "mozTrayBiff: No application icon found\n");
+				RemoveBiffIcon();
 			}
 		}
 		else
