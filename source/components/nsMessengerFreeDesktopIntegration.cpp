@@ -57,7 +57,9 @@
 #include <nsIWindowMediator.h>
 #include <nsIDOMWindowInternal.h>
 #include <nsPIDOMWindow.h>
+#ifndef MOZ_TRUNK_FINAL
 #include <nsIScriptGlobalObject.h>
+#endif
 #include <nsIDocShell.h>
 #include <nsIBaseWindow.h>
 #include <nsIWidget.h>
@@ -179,13 +181,23 @@ void ResolveIconName(const nsAString &aIconName, const nsAString &aIconSuffix, n
 
 GdkWindow* GetGdkWindowForDOMWindow(nsISupports *window)
 {
+#ifndef MOZ_TRUNK_FINAL
 	nsCOMPtr<nsIScriptGlobalObject> ppScriptGlobalObj( do_QueryInterface(window) );
 	if ( !ppScriptGlobalObj )
-		return 0;
+		return NULL;
+#else
+	nsCOMPtr<nsPIDOMWindow> win( do_QueryInterface(window) );
+	if ( !win )
+		return NULL;
+#endif
   
+#ifndef MOZ_TRUNK_FINAL
 	nsCOMPtr<nsIBaseWindow> ppBaseWindow = do_QueryInterface( ppScriptGlobalObj->GetDocShell() );
+#else
+	nsCOMPtr<nsIBaseWindow> ppBaseWindow = do_QueryInterface( win->GetDocShell() );
+#endif
 	if (!ppBaseWindow)
-		return 0;
+		return NULL;
 
 	nsCOMPtr<nsIWidget> ppWidget;
 	ppBaseWindow->GetMainWidget( getter_AddRefs( ppWidget ) );
@@ -212,12 +224,12 @@ static void openMailWindow(const PRUnichar * aMailWindowName, const char * aFold
 		if (domWindow)
 		{
 			// Jump to the desired folder/message
-			nsCOMPtr<nsISupports> xpConnectObj;
 			nsCOMPtr<nsPIDOMWindow> piDOMWindow(do_QueryInterface(domWindow));
 			if (piDOMWindow)
 			{
 				if ((aFolderUri != NULL) && (aMessageUri != NULL))
 				{
+					nsCOMPtr<nsISupports> xpConnectObj;
 					piDOMWindow->GetObjectProperty(NS_LITERAL_STRING("MsgWindowCommands").get(), getter_AddRefs(xpConnectObj));
 					nsCOMPtr<nsIMsgWindowCommands> msgWindowCommands = do_QueryInterface(xpConnectObj);
 					if (msgWindowCommands)
@@ -342,6 +354,10 @@ nsMessengerFreeDesktopIntegration::nsMessengerFreeDesktopIntegration() :
 
 	nsCOMPtr<nsILocalFile> iconFile;
 	ResolveIconName(NS_LITERAL_STRING("messengerWindow16"), NS_LITERAL_STRING(".xpm"), getter_AddRefs(iconFile));
+	if (!iconFile)
+	{
+		ResolveIconName(NS_LITERAL_STRING("mozicon16"), NS_LITERAL_STRING(".xpm"), getter_AddRefs(iconFile));
+	}
 	if (iconFile)
 	{
 		iconFile->GetNativePath(mBrandIconPath);
@@ -464,28 +480,28 @@ void nsMessengerFreeDesktopIntegration::ApplyPrefs()
 	mPrefBranch->GetBoolPref(PREF_BIFF_SHOW_ICON, &mShowBiffIcon);
 	mPrefBranch->GetBoolPref(PREF_BIFF_SHOW_ASUS_LED, &mUseHwIndicator);
 	mPrefBranch->GetBoolPref(PREF_BIFF_USE_HW_INDICATOR, &mUseHwIndicator);
-	if (mUseHwIndicator)
+	
+	// Try to autodetect the hw indicator filename.
+	// This still doesn't mean we'll use it; depends on mUseHwIndicator.
+	nsXPIDLCString newHwIndicatorFile;
+	mPrefBranch->GetCharPref(PREF_BIFF_HW_INDICATOR_FILE, getter_Copies(newHwIndicatorFile));
+	if ((newHwIndicatorFile != mHwIndicatorFile) || mHwIndicatorFile.IsEmpty())
 	{
-		nsXPIDLCString newHwIndicatorFile;
-		mPrefBranch->GetCharPref(PREF_BIFF_HW_INDICATOR_FILE, getter_Copies(newHwIndicatorFile));
-		if (newHwIndicatorFile != mHwIndicatorFile)
+		HideHwIndicator();
+		if (newHwIndicatorFile.IsEmpty())
 		{
-			HideHwIndicator();
-			if (newHwIndicatorFile.IsEmpty())
+			mHwIndicatorFile = EmptyCString();
+			// Autodetect
+			for (unsigned int i=0;
+			     i<sizeof(HW_INDICATOR_CONTROL_FILENAMES)/sizeof(HW_INDICATOR_CONTROL_FILENAMES[0]);
+			     ++i)
 			{
-				mHwIndicatorFile = EmptyCString();
-				// Autodetect
-				for (unsigned int i=0;
-				     i<sizeof(HW_INDICATOR_CONTROL_FILENAMES)/sizeof(HW_INDICATOR_CONTROL_FILENAMES[0]);
-				     ++i)
+				const char* filename = HW_INDICATOR_CONTROL_FILENAMES[i];
+				if ((access(filename, R_OK | W_OK) == 0) ||
+				    ((errno != ENOENT) && (errno != ENOTDIR)))
 				{
-					const char* filename = HW_INDICATOR_CONTROL_FILENAMES[i];
-					if ((access(filename, R_OK | W_OK) == 0) ||
-					    ((errno != ENOENT) && (errno != ENOTDIR)))
-					{
-						mHwIndicatorFile = filename;
-						break;
-					}
+					mHwIndicatorFile = filename;
+					break;
 				}
 			}
 		}
@@ -493,15 +509,17 @@ void nsMessengerFreeDesktopIntegration::ApplyPrefs()
 		{
 			mHwIndicatorFile = newHwIndicatorFile;
 		}
-		if (mHasBiff)
-		{
-			ShowHwIndicator();
-		}
+	}
+
+	if (mUseHwIndicator && mHasBiff)
+	{
+		ShowHwIndicator();
 	}
 	else
 	{
 		HideHwIndicator();
 	}
+	
 	if (mAlwaysShowBiffIcon)
 	{
 		mShowBiffIcon = true; // force to true
@@ -685,22 +703,11 @@ void nsMessengerFreeDesktopIntegration::AddBiffIcon()
 {
 	if (mTrayIcon == NULL)
 	{
-		// This should be ideally replaced by a completely libpr0n-based icon rendering.
-		GError* err = NULL;
-		GdkPixbuf* pixbuf = gdk_pixbuf_new_from_file(mBrandIconPath.get(), &err);
-		if (pixbuf != NULL)
+		mTrayIcon = egg_status_icon_new();
+		if (mTrayIcon != NULL)
 		{
-			mTrayIcon = egg_status_icon_new_from_pixbuf(pixbuf);
-			if (mTrayIcon != NULL)
-			{
-				g_signal_connect(G_OBJECT(mTrayIcon), "activate", G_CALLBACK(TrayIconActivate), this);
-				g_signal_connect(G_OBJECT(mTrayIcon), "popup-menu", G_CALLBACK(TrayIconPopupMenu), this);
-			}
-			g_object_unref(G_OBJECT(pixbuf));
-		}
-		else
-		{
-			fprintf (stderr, "%s\n", err->message);
+			g_signal_connect(G_OBJECT(mTrayIcon), "activate", G_CALLBACK(TrayIconActivate), this);
+			g_signal_connect(G_OBJECT(mTrayIcon), "popup-menu", G_CALLBACK(TrayIconPopupMenu), this);
 		}
 	}
 }
@@ -821,7 +828,7 @@ void nsMessengerFreeDesktopIntegration::OnBiffChange()
 	}
 	else
 	{
-		if (mAlwaysShowBiffIcon)
+		if (mAlwaysShowBiffIcon && !mBrandIconPath.IsEmpty())
 		{
 			ClearToolTip();
 			GError* err = NULL;
@@ -833,7 +840,7 @@ void nsMessengerFreeDesktopIntegration::OnBiffChange()
 			}
 			else
 			{
-				fprintf (stderr, "%s\n", err->message);
+				fprintf (stderr, "mozTrayBiff: Error loading application icon: %s\n", err->message);
 			}
 		}
 		else
