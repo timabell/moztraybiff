@@ -26,15 +26,18 @@ Compilation Options:
      
    MOZ_TRUNK=1
 
-     To build a version for Mozilla Nightlies ('trunk branch'), specify
-     the MOZ_TRUNK option, e.g.:
+     To build a version for an unreleased version of Thunderbird
+     or Seamonkey ('trunk branch'), specify the MOZ_TRUNK option, e.g.:
 
        make MOZ_TRUNK=1
 
-     This will attempt to use code adapted for recent Mozilla Nightlies
-     rather than code for the stable version this extension was
-     intended for. Note however than the extension is not guaranteed
-     to compile cleanly with "nightlies".
+     This will attempt to use code adapted for recent Mozilla nightly
+     releases and/or betas and release candidates, rather than code
+     for the stable version this extension was intended for.
+     Note, however, than the extension is not guaranteed to compile
+     cleanly with whatever release you throw at it -- this merely
+     selects a version of the code, if one exists, which is more fit
+     for latest changes in the Mozilla code.
 
    DEBUG=1
 
