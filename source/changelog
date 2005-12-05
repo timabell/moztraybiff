@@ -16,7 +16,7 @@
 	* Fixed French localization.
 	* Added Czech localization (coutersy of Jan Kratochvíl).
 	* Made the support for hardware new mail indicators
-	  (programmatically-cotnrollable LEDs found on computer cases)
+	  (programmatically-controllable LEDs found on computer cases)
 	  more generic and added support to the LED found on Acer
 	  laptops in addition to ASUS laptops (on Linux, with the
 	  appropriate driver installed).
