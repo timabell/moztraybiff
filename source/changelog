@@ -1,10 +1,15 @@
 1.2 (?):
 
-	* This version is clearly declared to be GPL. For all concerns,
-	  all previous releases were GPL-safe too, but this is the
-	  first version which actually caries a license statement.
+	* This is the first version to be licesed under
+	  the terms of the GPL. This licensing decision is supported
+	  by the fact that this project, except for original code,
+          also includes code from libegg (LGPL) and Mozilla
+          (MPL 1.1/LGPL/GPL).
+	  For all concerns, all previous releases were GPL-safe too,
+	  but this is the first version which actually caries
+	  a license statement.
 	  Thanks to Manuel López-Ibáñez for bringing up this issue up
-	  and his research.
+	  and for his research.
 	* Support for Thunderbird 1.5.
 	* By popular request, added an option to always show the tray icon,
 	  regardless of whether there is new mail. Initial implementation was
