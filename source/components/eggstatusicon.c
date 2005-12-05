@@ -518,8 +518,13 @@ egg_status_icon_update_image (EggStatusIcon *status_icon)
               GtkWidget* image = status_icon->priv->image;
               gtk_misc_get_padding(GTK_MISC(image), &xpad, &ypad);
               gtk_misc_get_alignment(GTK_MISC(image), &xalign, &yalign);
-              image_offset_x = floor(image->allocation.x + xpad + ((image->allocation.width - image->requisition.width) * xalign));
-              image_offset_y = floor(image->allocation.y + ypad + ((image->allocation.height - image->requisition.height) * yalign));
+              /* We base on the code found in gtk_image_expose, but we also
+                 add MAX() because we know the widget will expand
+                 to fit the image, so if we get a negative placement, this
+                 means the allocated size is smaller than the requested one
+                 but this is only temporary. */
+              image_offset_x = MAX(0, floor(image->allocation.x + xpad + ((image->allocation.width - image->requisition.width) * xalign) + 0.5));
+              image_offset_y = MAX(0, floor(image->allocation.y + ypad + ((image->allocation.height - image->requisition.height) * yalign) + 0.5));
             }
             GdkBitmap* scaled_mask = NULL;
             gdk_pixbuf_render_pixmap_and_mask(scaled, NULL, &scaled_mask, 0);
@@ -530,7 +535,6 @@ egg_status_icon_update_image (EggStatusIcon *status_icon)
                g_object_unref(scaled_mask);
             }
 	    
-
 	    g_object_unref (scaled);
 	  }
 	else
