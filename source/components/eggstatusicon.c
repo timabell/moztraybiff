@@ -513,18 +513,21 @@ egg_status_icon_update_image (EggStatusIcon *status_icon)
             gint image_offset_x, image_offset_y;
             /* No way to know the image's real offset but by calculating ourselves. */
             {
+              GtkOrientation orientation;
               gfloat xalign, yalign;
               gint xpad, ypad;
               GtkWidget* image = status_icon->priv->image;
               gtk_misc_get_padding(GTK_MISC(image), &xpad, &ypad);
               gtk_misc_get_alignment(GTK_MISC(image), &xalign, &yalign);
-              /* We base on the code found in gtk_image_expose, but we also
-                 add MAX() because we know the widget will expand
-                 to fit the image, so if we get a negative placement, this
-                 means the allocated size is smaller than the requested one
-                 but this is only temporary. */
-              image_offset_x = MAX(0, floor(image->allocation.x + xpad + ((image->allocation.width - image->requisition.width) * xalign) + 0.5));
-              image_offset_y = MAX(0, floor(image->allocation.y + ypad + ((image->allocation.height - image->requisition.height) * yalign) + 0.5));
+              /* We're aligning either horizontally or vertically, depending
+                 on the orientation. According to this, we'll assume either
+                 width or height to be preallocated up to the panel's size. */
+              orientation = egg_tray_icon_get_orientation (EGG_TRAY_ICON (status_icon->priv->tray_icon));
+              gint alloc_height = (orientation == GTK_ORIENTATION_HORIZONTAL) ? size : image->requisition.height;
+              gint alloc_width = (orientation == GTK_ORIENTATION_VERTICAL) ? size : image->requisition.width;
+              /* We base on the code found in gtk_image_expose */
+              image_offset_x = floor(image->allocation.x + xpad + ((alloc_width - image->requisition.width) * xalign) + 0.5);
+              image_offset_y = floor(image->allocation.y + ypad + ((alloc_height - image->requisition.height) * yalign) + 0.5);
             }
             GdkBitmap* scaled_mask = NULL;
             gdk_pixbuf_render_pixmap_and_mask(scaled, NULL, &scaled_mask, 0);
