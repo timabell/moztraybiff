@@ -64,7 +64,7 @@ ${COMPONENT_NAME}.so: trayBiffModule.o nsMessengerFreeDesktopIntegration.o eggtr
 	if [ -f $@ ]; then \
 		rm $@; \
 	fi
-	${CXX} ${MOZ_LDFLAGS} ${GTK_LDFLAGS} -shared -o $@ $^
+	${CXX} ${MOZ_LDFLAGS} ${GTK_LDFLAGS} -Wl,--discard-all -Wl,-Bsymbolic -Wl,--version-script=${COMPONENT_NAME}.version_script -shared -o $@ $^
 
 ${COMPONENT_NAME}.xpt: nsIMessengerFreeDesktopIntegration.xpt
 	LD_LIBRARY_PATH=$(MOZILLA_UTIL_PREFIX):`pwd` $(MOZILLA_UTIL_PREFIX)/xpt_link $@ $<
