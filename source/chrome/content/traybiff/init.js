@@ -44,7 +44,7 @@ function init()
 		}
 		catch(err)
 		{
-			alert("Unable to register shared object:\n" + err + "\n\nThe mozTrayBiff extension cannot be activated.");
+			alert("Unable to register shared object:\n" + err + "\n\nThe New Mail Icon extension cannot be activated.");
 		}
 	}
 }
