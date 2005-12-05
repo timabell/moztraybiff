@@ -5,7 +5,7 @@
 	  by the fact that this project, in addition to original code,
           includes code from libegg (LGPL) and Mozilla (MPL 1.1/LGPL/GPL).
 	  For all concerns, all previous releases were GPL-safe too,
-	  but this is the first version which actually caries
+	  but this is the first version which actually carries
 	  a license statement.
 	  Thanks to Manuel López-Ibáñez for bringing up this issue up
 	  and for his research.
