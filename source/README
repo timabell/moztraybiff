@@ -5,25 +5,26 @@ AUTHOR: Ilya Konstantinov
 LICENSE: GNU General Public License
          (see COPYING for the complete license text)
 
-This Mozilla extension makes Mozilla Mail and Thunderbird display an icon in the system tray
-when new mail arrives. It supports the standard (FreeDesktop.org) system tray, as used by GNOME,
-KDE and IceWM (with 'icewmtray').
+This Mozilla extension makes Mozilla Mail and Thunderbird display an
+icon in the system tray when new mail arrives. It supports the
+standard (FreeDesktop.org) system tray, as used by GNOME, KDE and
+IceWM (with 'icewmtray').
 
 Compilation:
 
    To compile the extension, simply run 'make'. You might need to specify
    some of the options specified further on the 'make' command-line.
-   
+
 Compilation Options:
-   
+
    MOZILLA_PLATFORM=(suite|tbird) *OBLIGATORY*
-     
+
      Specifies what platform to target the build for. Possible
      options are 'suite' (for Mozilla Suite builds) and 'tbird'
      (for Thunderbird builds), e.g.:
-     
+
        make MOZILLA_PLATFORM=tbird
-     
+
    MOZ_TRUNK=1
 
      To build a version for an unreleased version of Thunderbird
@@ -45,7 +46,7 @@ Compilation Options:
      of the extension's native component, specify the DEBUG option, e.g.:
 
        make DEBUG=1
-     
+
    REAL_CONFIG=<path>
 
      If your 'mozilla-thunderbird-config' executable is located in a
@@ -61,18 +62,18 @@ Compilation Options:
      original package as your distro used (e.g. by taking the distro's
      SRPM and rebuilding it). This option should point at the
      configuration script of that build.
-     
+
 Installation:
 
   In Mozilla Suite:
-  
+
     Open the XPI file in Mozilla Suite ('File | Open' menu option,
     or by browsing to it).
-    
+
   In Mozilla Thunderbird:
 
-    Use the Extension Manager (available via 'Tools | Install Extension' menu option)
-    to install the XPI file.
+    Use the Extension Manager (available via 'Tools | Install
+    Extension' menu option) to install the XPI file.
 
 --
 Share and enjoy!
