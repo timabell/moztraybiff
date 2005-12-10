@@ -15,6 +15,7 @@
 	  provided by Patrizio Bassi.
 	* Fixed French localization.
 	* Added Czech localization (coutersy of Jan Kratochvíl).
+	* Added Russian localization.
 	* Made the support for hardware new mail indicators
 	  (programmatically-controllable LEDs found on computer cases)
 	  more generic and added support to the LED found on Acer
