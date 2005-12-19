@@ -1,3 +1,3 @@
-<!ENTITY showTrayIconForNewMessages.label "Показывать значок при получении новых сообщений">
-<!ENTITY alwaysShowTrayIcon.label  "Всегда показывать значок (предоставляя быстрый доступ к почте)">
-<!ENTITY useHwIndicator.label "Использовать встроенный индикатор новой почты на компьютерах, имеющих таковой">
+<!ENTITY showTrayIconForNewMessages.label "Show a tray icon">
+<!ENTITY alwaysShowTrayIcon.label  "Always show tray icon (providing quick access to mail)">
+<!ENTITY useHwIndicator.label "Use built-in new mail indicator on computers that have it">

@@ -4,18 +4,20 @@
 
 	<!-- list all the locales being supplied -->
 	<RDF:Seq about="urn:mozilla:locale:root">
-		<RDF:li resource="urn:mozilla:locale:ru-RU"/>
+		<RDF:li resource="urn:mozilla:locale:en-US"/>
 	</RDF:Seq>
 
 	<!-- locale information -->
-	<RDF:Description about="urn:mozilla:locale:ru-RU">
+	<RDF:Description about="urn:mozilla:locale:en-US"
+	                 chrome:displayName="English (US)"
+                         chrome:name="en-US">
 		<chrome:packages>
-			<RDF:Seq about="urn:mozilla:locale:ru-RU:packages">
-				<RDF:li resource="urn:mozilla:locale:ru-RU:traybiff"/>
+			<RDF:Seq about="urn:mozilla:locale:en-US:packages">
+				<RDF:li resource="urn:mozilla:locale:en-US:traybiff"/>
 			</RDF:Seq>
 		</chrome:packages>
 	</RDF:Description>
 
-	<RDF:Description about="urn:mozilla:locale:ru-RU:traybiff" chrome:localeVersion="1.2"/>
+	<RDF:Description about="urn:mozilla:locale:en-US:traybiff" chrome:localeVersion="1.2"/>
 
 </RDF:RDF>

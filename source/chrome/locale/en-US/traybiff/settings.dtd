@@ -1,5 +1,5 @@
-<!ENTITY dialog.title "Значок новой почты">
-<!ENTITY features.caption  "Возможности">
-<!ENTITY showTrayIconForNewMessages.label  "Показывать значок при получении новых сообщений">
-<!ENTITY alwaysShowTrayIcon.label  "Всегда показывать значок (предоставляя быстрый доступ к Thunderbird)">
-<!ENTITY useHwIndicator.label "Использовать встроенный индикатор новой почты на компьютерах, имеющих таковой">
+<!ENTITY dialog.title "New Mail Icon">
+<!ENTITY features.caption  "Features">
+<!ENTITY showTrayIconForNewMessages.label  "Show tray icon when new messages arrive">
+<!ENTITY alwaysShowTrayIcon.label  "Always show tray icon (providing quick access to Thunderbird)">
+<!ENTITY useHwIndicator.label "Use built-in new mail indicator on computers that have it">
