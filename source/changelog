@@ -1,4 +1,14 @@
-1.2 (?):
+1.2.1 (?):
+
+	* Change install.rdf to include only the first two segments
+	  of the application version we're targetting for.
+	  For example, when building with a Thunderbird 1.0.7 target,
+	  we'll specify version 1.0 as a requirement.
+	* Remove the UUID-per-architecture differentiation.
+	* Revert the (mistaken) replacement of the en-US locale
+	  with ru-RU.
+
+1.2 (2005-12-11):
 
 	* This is the first version to be licensed under
 	  the terms of the GPL. This licensing decision is supported
