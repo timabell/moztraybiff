@@ -10,6 +10,7 @@ my $arch = $1;
 my $version = `$ENV{'REAL_CONFIG'} --version`
 	or die "Unable to determine target version";
 chomp $version;
+$version =~ s/^(\d+)\.(\d+)\..*/$1.$2/;
 my $minVersion = $version;
 my $maxVersion = $version;
 
