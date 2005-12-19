@@ -1,6 +1,6 @@
 SUBDIRS = components chrome
 .PHONY: all clean subdirs ${SUBDIRS} content locale
-VERSION = 1.2
+VERSION = 1.2.1
 PLATFORM := $(shell gcc -dumpmachine)
 XPI_NAME = mozTrayBiff
 XPI_VERSION := $(VERSION)-$(PLATFORM)
