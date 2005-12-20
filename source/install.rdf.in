@@ -27,6 +27,7 @@
 				<em:locale>locale/de-DE/traybiff/</em:locale>
 				<em:locale>locale/es-ES/traybiff/</em:locale>
 				<em:locale>locale/cs-CZ/traybiff/</em:locale>
+				<em:locale>locale/ru-RU/traybiff/</em:locale>
 			</Description>
 		</em:file>
 	</Description>      
