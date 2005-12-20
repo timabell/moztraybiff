@@ -16,6 +16,8 @@
 		<em:homepageURL>http://moztraybiff.mozdev.org/</em:homepageURL>
 		<em:optionsURL>chrome://traybiff/content/settings.xul</em:optionsURL>
 		<em:updateURL>http://moztraybiff.mozdev.org/update.rdf</em:updateURL>
+		<em:type>2</em:type>
+		%targetPlatforms%
 		<em:file>
 			<Description about="urn:mozilla:extension:file:tray-biff.jar">
 				<em:package>content/traybiff/</em:package>

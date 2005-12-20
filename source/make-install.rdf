@@ -14,7 +14,23 @@ $version =~ s/^(\d+)\.(\d+)\..*/$1.$2/;
 my $minVersion = $version;
 my $maxVersion = $version;
 
-open(IN, "<install.rdf.in")
+my $in_filename = "install.rdf.in";
+
+my $targetPlaforms = "";
+my @platforms;
+if (opendir(PLATFORMS,"platform"))
+{
+	while(my $entry = readdir(PLATFORMS))
+	{
+		if (-d "platform/$entry" && $entry ne '..' && $entry ne '.')
+		{
+			$targetPlatforms .= "<em:targetPlatform>$entry</em:targetPlatform>$/";
+		}
+	}
+	closedir(PLATFORMS);
+}
+
+open(IN, "<$in_filename")
 	or die $!;
 open(OUT, ">install.rdf")
 	or die $!;
@@ -22,6 +38,7 @@ while(<IN>)
 {
 	s/%minVersion%/$minVersion/g;
 	s/%maxVersion%/$minVersion/g;
+	s/%targetPlatforms%/$targetPlatforms/g;
 	print(OUT)
 		or die $!;
 }

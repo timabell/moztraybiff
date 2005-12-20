@@ -103,6 +103,9 @@ eggmarshalers.c: eggmarshalers.list
 eggmarshalers.h: eggmarshalers.list
 	glib-genmarshal --prefix=_egg_marshal --header $< > $@
 
+xulAppInfo: xulAppInfo.cpp
+	${CXX} ${MOZ_INCLUDES} ${CXXFLAGS} -c $< -o $@
+
 register:
 	LD_LIBRARY_PATH=$MOZILLA_UTIL_PREFIX:`pwd` $MOZILLA_UTIL_PREFIX/regxpcom ${COMPONENT_NAME}.so
 

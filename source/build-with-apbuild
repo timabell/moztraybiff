@@ -1,9 +1,0 @@
-#!/bin/bash
-
-export APBUILD_STATIC_LIBGCC=1
-export CC=apgcc
-export CXX=apg++
-# Avoid dynamic linkage to libstdc++
-# export CXX=apgcc
-
-make $@
