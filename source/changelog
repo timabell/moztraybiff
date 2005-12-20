@@ -5,6 +5,8 @@
 	  For example, when building with a Thunderbird 1.0.7 target,
 	  we'll specify version 1.0 as a requirement.
 	* Remove the UUID-per-architecture differentiation.
+	  This means users on x86-64 will have to uninstall the previous
+	  version.
 	* Revert the (mistaken) replacement of the en-US locale
 	  with ru-RU.
 
