@@ -38,11 +38,14 @@ if ($idlflags)
 	chomp $libs;
 	$libs =~ m{.*/(.*)$};
 	my $PRODUCT_NAME = $1;
+
+	my $exec_prefix = `$mozilla_config --exec-prefix`;
+	chomp $exec_prefix;
 	
 	$idlflags = `$mozilla_config --idlflags`;
 	chomp $idlflags;
 	$idlflags =~ s(%{idldir})(/usr/share/idl/$PRODUCT_NAME);
-	print $idlflags;
+	print $idlflags . " -I" . $exec_prefix . "/idl";
 }
 
 if ($cflags)
@@ -60,7 +63,14 @@ if ($cflags)
 	print join(' ', map { s{/$}{}; "-I$_"; } @component_paths);
 }
 
-if ($util_prefix || $lib_prefix)
+if ($util_prefix)
+{
+	my $exec_prefix = `$mozilla_config --exec-prefix`;
+	chomp $exec_prefix;
+	print $exec_prefix."/bin";
+}
+
+if ($lib_prefix)
 {
 	$libs = `$mozilla_config --libs`;
 	chomp $libs;

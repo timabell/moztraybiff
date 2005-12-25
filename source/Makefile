@@ -55,9 +55,9 @@ clean:
 	done
 
 platform: components
-	mkdir platform
-	mkdir platform/${PLATFORM}
-	mkdir platform/${PLATFORM}/components
+	mkdir platform 2> /dev/null; true
+	mkdir platform/${PLATFORM} 2> /dev/null; true
+	mkdir platform/${PLATFORM}/components 2> /dev/null; true
 	cp components/libtraybiff.so platform/${PLATFORM}/components/
 
 subdirs: ${SUBDIRS}
