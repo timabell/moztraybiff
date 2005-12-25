@@ -1,10 +1,14 @@
 SUBDIRS = components chrome
 .PHONY: all clean subdirs ${SUBDIRS} content locale
 VERSION = 1.2.1
-PLATFORM := foobar
 XPI_NAME = mozTrayBiff
 XPI_VERSION := $(VERSION)-$(PLATFORM)
 XPI_FILENAME = $(XPI_NAME)-$(XPI_VERSION).xpi
+
+ifeq ($(PLATFORM),)
+# Attempt to detect the platform name
+PLATFORM = `./get-platform`
+endif
 
 # This can be either 'suite' or 'tbird'
 MOZILLA_PLATFORM = 
