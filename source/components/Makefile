@@ -36,8 +36,9 @@ CXXFLAGS += \
 	-fno-rtti \
 	-fno-exceptions \
 	-fshort-wchar \
-	-fPIC \
-	-DMOZILLA_INTERNAL_API
+	-fPIC
+
+INTERNAL_FLAGS = -DMOZILLA_INTERNAL_API
 
 ifdef DEBUG
 	CXXFLAGS += -g -DDEBUG -D_DEBUG -DTRACING
@@ -83,10 +84,10 @@ trayBiffIcon.h: message-mail-new.png
 	gdk-pixbuf-csource --raw --name=tray_biff_icon $< > $@
 
 trayBiffModule.o: trayBiffModule.cpp nsMessengerFreeDesktopIntegration.h nsIMessengerFreeDesktopIntegration.h
-	${CXX} ${MOZ_INCLUDES} ${GTK_CFLAGS} ${CXXFLAGS} -c $< -o $@
+	${CXX} ${MOZ_INCLUDES} ${GTK_CFLAGS} ${CXXFLAGS} ${INTERNAL_FLAGS} -c $< -o $@
 
 nsMessengerFreeDesktopIntegration.o: nsMessengerFreeDesktopIntegration.cpp nsMessengerFreeDesktopIntegration.h trayBiffIcon.h nsIMessengerFreeDesktopIntegration.h
-	${CXX} ${MOZ_INCLUDES} ${GTK_CFLAGS} ${CXXFLAGS} -c $< -o $@
+	${CXX} ${MOZ_INCLUDES} ${GTK_CFLAGS} ${CXXFLAGS} ${INTERNAL_FLAGS} -c $< -o $@
 
 eggtrayicon.o: eggtrayicon.c eggtrayicon.h
 	${CC} ${GTK_CFLAGS} ${CFLAGS} -DEGG_COMPILATION -c $< -o $@
@@ -104,7 +105,7 @@ eggmarshalers.h: eggmarshalers.list
 	glib-genmarshal --prefix=_egg_marshal --header $< > $@
 
 xulAppInfo: xulAppInfo.cpp
-	${CXX} ${MOZ_INCLUDES} ${CXXFLAGS} -c $< -o $@
+	${CXX} -g ${CXXFLAGS} ${MOZ_LDFLAGS} ${MOZ_INCLUDES} $< -o $@
 
 register:
 	LD_LIBRARY_PATH=$MOZILLA_UTIL_PREFIX:`pwd` $MOZILLA_UTIL_PREFIX/regxpcom ${COMPONENT_NAME}.so
