@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Try to guess the Mozilla platform string.
+# For now, we're unable to determine it from Mozilla itself.
+
+PLATFORM=`uname -s`_
+MACHINE=`uname -m`
+case $MACHINE in
+*86)
+	PLATFORM=${PLATFORM}x86
+	;;
+powerpc*)
+	PLATFORM=${PLATFORM}ppc
+	;;
+Alpha | alpha | ALPHA)
+	PLATFORM=${PLATFORM}Alpha
+	;;
+x86_64 | sparc | ppc | ia64)
+	PLATFORM=${PLATFORM}${MACHINE}
+	;;
+esac
+
+if cc --version | grep GCC > /dev/null; then
+	PLATFORM=${PLATFORM}-gcc3
+fi
+
+echo $PLATFORM
