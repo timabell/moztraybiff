@@ -9,6 +9,8 @@
 	  version.
 	* Revert the (mistaken) replacement of the en-US locale
 	  with ru-RU.
+	* For Thunderbird 1.5, include builds for multiple
+	  platforms in the single XPI.
 
 1.2 (2005-12-11):
 
