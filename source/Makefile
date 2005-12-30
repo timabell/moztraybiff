@@ -45,6 +45,8 @@ all: subdirs ${TRUNK_TARGETS} ${XPI_FILENAME}
 
 distclean: clean
 	find . \( -name 'CVS' -or -name '*~' -or -name '.#*' \) -print | xargs /bin/rm -rf
+	rm -rf platform; true
+	rm components/xulAppInfo; true
 
 clean:
 	[ -e *.xpi ] && rm *.xpi; true
