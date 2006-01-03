@@ -1,4 +1,4 @@
-1.2.1 (2005-30-12):
+1.2.1 (?):
 
 	* Change install.rdf to include only the first two segments
 	  of the application version we're targetting for.
@@ -11,6 +11,7 @@
 	  with ru-RU.
 	* For Thunderbird 1.5, include builds for multiple
 	  platforms in the single XPI.
+	* Fixed the icon not to be cut off on KDE.
 
 1.2 (2005-12-11):
 
