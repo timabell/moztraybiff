@@ -63,6 +63,8 @@ struct _EggStatusIconPrivate
   GtkWidget    *tray_icon;
   GtkWidget    *image;
   gint          size;
+  gint          alloc_height;
+  gint          alloc_width;
 
   GtkTooltips  *tooltips;
 
@@ -496,18 +498,18 @@ egg_status_icon_update_image (EggStatusIcon *status_icon)
 
 	    if (width > size || height > size)
 	      {
-		scaled = gdk_pixbuf_scale_simple (pixbuf,
-						  MIN (size, width),
-						  MIN (size, height),
-						  GDK_INTERP_BILINEAR);
+                scaled = gdk_pixbuf_scale_simple (pixbuf,
+                                                        MIN (size, width),
+                                                        MIN (size, height),
+                                                        GDK_INTERP_BILINEAR);
 	      }
 	    else
-	      {
-		scaled = g_object_ref (pixbuf);
-	      }
+              {
+                scaled = g_object_ref (pixbuf);
+              }
 
 	    gtk_image_set_from_pixbuf (GTK_IMAGE (status_icon->priv->image), scaled);
-	    
+
             /* Sets the icon's transparency mask as the window's shape mask.
                Note: This doesn't handle translucency (partial transparency). */
             gint image_offset_x, image_offset_y;
@@ -523,11 +525,9 @@ egg_status_icon_update_image (EggStatusIcon *status_icon)
                  on the orientation. According to this, we'll assume either
                  width or height to be preallocated up to the panel's size. */
               orientation = egg_tray_icon_get_orientation (EGG_TRAY_ICON (status_icon->priv->tray_icon));
-              gint alloc_height = (orientation == GTK_ORIENTATION_HORIZONTAL) ? size : image->requisition.height;
-              gint alloc_width = (orientation == GTK_ORIENTATION_VERTICAL) ? size : image->requisition.width;
               /* We base on the code found in gtk_image_expose */
-              image_offset_x = floor(image->allocation.x + xpad + ((alloc_width - image->requisition.width) * xalign) + 0.5);
-              image_offset_y = floor(image->allocation.y + ypad + ((alloc_height - image->requisition.height) * yalign) + 0.5);
+              image_offset_x = floor(image->allocation.x + xpad + ((status_icon->priv->alloc_width - image->requisition.width) * xalign) + 0.5);
+              image_offset_y = floor(image->allocation.y + ypad + ((status_icon->priv->alloc_height - image->requisition.height) * yalign) + 0.5);
             }
             GdkBitmap* scaled_mask = NULL;
             gdk_pixbuf_render_pixmap_and_mask(scaled, NULL, &scaled_mask, 0);
@@ -564,6 +564,7 @@ egg_status_icon_size_allocate (EggStatusIcon *status_icon,
 {
   GtkOrientation orientation;
   gint size;
+  gboolean alloc_changed = FALSE;
 
   orientation = egg_tray_icon_get_orientation (EGG_TRAY_ICON (status_icon->priv->tray_icon));
 
@@ -571,17 +572,26 @@ egg_status_icon_size_allocate (EggStatusIcon *status_icon,
     size = allocation->height;
   else
     size = allocation->width;
-    
+  
+  if ((status_icon->priv->alloc_height != allocation->height) ||
+       (status_icon->priv->alloc_width != allocation->width))
+  {
+    status_icon->priv->alloc_height = allocation->height;
+    status_icon->priv->alloc_width = allocation->width;
+    alloc_changed = TRUE;
+  }
+  
   if (status_icon->priv->size != size)
     {
       status_icon->priv->size = size;
-
       g_object_notify (G_OBJECT (status_icon), "size");
-
-      if (!emit_size_changed_signal (status_icon, size))
-	{
-	  egg_status_icon_update_image (status_icon);
-	}
+      emit_size_changed_signal (status_icon, size);
+      alloc_changed = TRUE;
+    }
+    
+    if (alloc_changed)
+    {
+      egg_status_icon_update_image (status_icon);
     }
 }
 
