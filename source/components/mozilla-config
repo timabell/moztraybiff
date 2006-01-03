@@ -67,7 +67,22 @@ if ($util_prefix)
 {
 	my $exec_prefix = `$mozilla_config --exec-prefix`;
 	chomp $exec_prefix;
-	print $exec_prefix."/bin";
+	$util_prefix = $exec_prefix."/bin";
+	if (-f "$util_prefix/xpidl")
+	{
+		print $util_prefix;
+	}
+	else
+	{
+		$libs = `$mozilla_config --libs`;
+		chomp $libs;
+	
+		if ($libs =~ /^-L(.*?)(\s|$)/)
+		{
+			$util_prefix = $1;
+			print $util_prefix;
+		}
+	}
 }
 
 if ($lib_prefix)
