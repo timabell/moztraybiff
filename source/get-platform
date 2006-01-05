@@ -6,7 +6,7 @@
 PLATFORM=`uname -s`_
 MACHINE=`uname -m`
 case $MACHINE in
-*86)
+*86|i86pc)
 	PLATFORM=${PLATFORM}x86
 	;;
 powerpc*)
@@ -15,12 +15,15 @@ powerpc*)
 Alpha | alpha | ALPHA)
 	PLATFORM=${PLATFORM}Alpha
 	;;
+sun4u)
+	PLATFORM=${PLATFORM}sparc
+	;;
 x86_64 | sparc | ppc | ia64)
 	PLATFORM=${PLATFORM}${MACHINE}
 	;;
 esac
 
-if cc --version | grep GCC > /dev/null; then
+if cc --version 2>/dev/null | grep GCC > /dev/null; then
 	PLATFORM=${PLATFORM}-gcc3
 fi
 
