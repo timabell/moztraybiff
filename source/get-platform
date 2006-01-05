@@ -3,10 +3,13 @@
 # Try to guess the Mozilla platform string.
 # For now, we're unable to determine it from Mozilla itself.
 
+if test -z "$CC"; then
+    CC=cc
+fi
 PLATFORM=`uname -s`_
-MACHINE=`uname -m`
+MACHINE=`uname -p`
 case $MACHINE in
-*86|i86pc)
+*86)
 	PLATFORM=${PLATFORM}x86
 	;;
 powerpc*)
@@ -15,16 +18,17 @@ powerpc*)
 Alpha | alpha | ALPHA)
 	PLATFORM=${PLATFORM}Alpha
 	;;
-sun4u)
-	PLATFORM=${PLATFORM}sparc
-	;;
 x86_64 | sparc | ppc | ia64)
 	PLATFORM=${PLATFORM}${MACHINE}
 	;;
 esac
 
-if cc --version 2>/dev/null | grep GCC > /dev/null; then
+if ${CC} --version 2>/dev/null | grep GCC > /dev/null; then
 	PLATFORM=${PLATFORM}-gcc3
+else
+    if ${CC} -V 2>&1 | grep 'Sun C' >/dev/null; then
+	    PLATFORM=${PLATFORM}-sunc
+    fi
 fi
 
 echo $PLATFORM
