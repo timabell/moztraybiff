@@ -1,4 +1,4 @@
-1.2.1 (?):
+1.2.1 (2006-01-07):
 
 	* Change install.rdf to include only the first two segments
 	  of the application version we're targetting for.
