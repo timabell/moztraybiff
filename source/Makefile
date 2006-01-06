@@ -67,7 +67,9 @@ subdirs: ${SUBDIRS}
 ${SUBDIRS}:
 	# Build with apbuild, if possible
 	if which apgcc > /dev/null && which apg++ > /dev/null; then \
-		APBUILD_STATIC_LIBGCC=1 CC=apgcc CXX=apg++ ${MAKE} -C $@; \
+		# Remove NEEDED dependency on libstdc++.so.X
+		# by using (ap)gcc instead of g++.
+		APBUILD_STATIC_LIBGCC=1 CC=apgcc CXX=apgcc ${MAKE} -C $@; \
 	else \
 		${MAKE} -C $@; \
 	fi
