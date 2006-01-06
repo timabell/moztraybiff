@@ -7,7 +7,10 @@ if test -z "$CC"; then
     CC=cc
 fi
 PLATFORM=`uname -s`_
-MACHINE=`uname -p`
+MACHINE=`uname -p 2>/dev/null`
+if [ $? != 0 ]; then
+	MACHINE=`uname -m`
+fi
 case $MACHINE in
 *86)
 	PLATFORM=${PLATFORM}x86
