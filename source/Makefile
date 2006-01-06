@@ -65,10 +65,10 @@ platform: components
 subdirs: ${SUBDIRS}
 
 ${SUBDIRS}:
-	# Build with apbuild, if possible
+	# - Build with apbuild, if possible
+	# - Remove DT_NEEDED dependency on libstdc++.so.X
+	#   by using (ap)gcc instead of g++.
 	if which apgcc > /dev/null && which apg++ > /dev/null; then \
-		# Remove NEEDED dependency on libstdc++.so.X
-		# by using (ap)gcc instead of g++.
 		APBUILD_STATIC_LIBGCC=1 CC=apgcc CXX=apgcc ${MAKE} -C $@; \
 	else \
 		${MAKE} -C $@; \
