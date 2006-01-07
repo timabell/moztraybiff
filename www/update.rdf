@@ -136,6 +136,7 @@
 				<em:updateLink>http://downloads.mozdev.org/moztraybiff/mozTrayBiff-1.2.1-tb1.5.xpi</em:updateLink>
 			</Description>
 		</em:targetApplication>
+		<!--
 		<em:targetApplication>
 			<Description>
 				<em:id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</em:id>
@@ -144,5 +145,6 @@
 				<em:updateLink>http://downloads.mozdev.org/moztraybiff/mozTrayBiff-1.2.1-tb1.0.7-Linux_x86-gcc3.xpi</em:updateLink>
 			</Description>
 		</em:targetApplication>
+		-->
 	</RDF:Description>
 </RDF:RDF>
