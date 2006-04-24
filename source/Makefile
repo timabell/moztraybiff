@@ -31,8 +31,8 @@ ifeq ($(MOZILLA_VERSION),1.5)
 	MOZ_TRUNK = 1
 endif
 
-ifdef MOZ_TRUNK
-	TRUNK_TARGETS = platform
+ifeq ($(MULTI_PLATFORM),1)
+	PLATFORM_TARGETS = platform
 	PLATFORM_FILES = platform/
 else
 	PLATFORM_FILES = components/libtraybiff.so
@@ -41,7 +41,7 @@ endif
 
 export DEBUG MOZ_TRUNK MOZILLA_PLATFORM REAL_CONFIG
 
-all: subdirs ${TRUNK_TARGETS} ${XPI_FILENAME}
+all: subdirs ${PLATFORM_TARGETS} ${XPI_FILENAME}
 
 distclean: clean
 	find . \( -name 'CVS' -or -name '*~' -or -name '.#*' \) -print | xargs /bin/rm -rf

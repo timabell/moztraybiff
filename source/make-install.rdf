@@ -37,7 +37,7 @@ open(OUT, ">install.rdf")
 while(<IN>)
 {
 	s/%minVersion%/$minVersion/g;
-	s/%maxVersion%/$minVersion/g;
+	s/%maxVersion%/$maxVersion/g;
 	s/%targetPlatforms%/$targetPlatforms/g;
 	print(OUT)
 		or die $!;
