@@ -1,3 +1,10 @@
+1.2.2 (2006-04-24):
+
+	* Update install.rdf to mark Thunderbird service releases
+	  (e.g. 1.5.0.2) as supported.
+	* Ship x86-64 releases in a separate non-platform-targeted
+	  XPI until Mozilla bug 335143 is fixed.
+
 1.2.1 (2006-01-07):
 
 	* Change install.rdf to include only the first two segments

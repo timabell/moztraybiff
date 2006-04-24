@@ -12,7 +12,7 @@ my $version = `$ENV{'REAL_CONFIG'} --version`
 chomp $version;
 $version =~ s/^(\d+)\.(\d+)\..*/$1.$2/;
 my $minVersion = $version;
-my $maxVersion = $version;
+my $maxVersion = $version.".0.*";
 
 my $in_filename = "install.rdf.in";
 
