@@ -15,7 +15,7 @@
 		chrome:authorURL="http://moztraybiff.mozdev.org/"
 		chrome:settingsURL="chrome://traybiff/content/settings.xul"
 		chrome:description="Displays an icon in the system tray when new mail arrives.">
-		chrome:localeVersion="1.2.2">
+		chrome:localeVersion="1.2.3">
 		<chrome:uninstallInfo>
 			<RDF:Seq>
 				<RDF:li>ComsD:libtraybiff.so</RDF:li>
