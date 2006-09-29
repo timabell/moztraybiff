@@ -98,6 +98,8 @@ private:
 private:
 	nsCOMPtr <nsIPrefBranch> mPrefBranch;
 	PRBool mShowBiffIcon, mUseHwIndicator, mAlwaysShowBiffIcon;
+	// Specifies which keyboard led should indicate new mail (0 = disable).
+	PRInt32 mUseKeyboardLed;
 	// Autodetected or manually-set file name for controlling the HW indicator.
 	nsXPIDLCString mHwIndicatorFile;
 	PRBool mHasBiff;

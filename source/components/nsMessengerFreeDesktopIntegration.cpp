@@ -98,6 +98,7 @@ const char* PREF_BIFF_SHOW_ASUS_LED = "mail.biff.show_asus_led";
 const char* PREF_BIFF_USE_HW_INDICATOR = "mail.biff.use_hw_indicator";
 const char* PREF_BIFF_HW_INDICATOR_FILE = "mail.biff.hw_indicator_file";
 const char* PREF_BIFF_ALWAYS_SHOW_ICON = "mail.biff.always_show_icon";
+const char* PREF_BIFF_USE_KEYBOARD_LED = "mail.biff.use_keyboard_led";
 
 // String bundles
 const char* STRING_BUNDLE_MESSENGER = "chrome://messenger/locale/messenger.properties";
@@ -434,6 +435,7 @@ nsMessengerFreeDesktopIntegration::Init()
 	rv = rootBranchInternal->AddObserver(PREF_BIFF_USE_HW_INDICATOR, this, PR_TRUE);
 	rv = rootBranchInternal->AddObserver(PREF_BIFF_HW_INDICATOR_FILE, this, PR_TRUE);
 	rv = rootBranchInternal->AddObserver(PREF_BIFF_ALWAYS_SHOW_ICON, this, PR_TRUE);
+	rv = rootBranchInternal->AddObserver(PREF_BIFF_USE_KEYBOARD_LED, this, PR_TRUE);
 	NS_ENSURE_SUCCESS(rv,rv);
 
 	// because we care about biff notifications
@@ -465,6 +467,7 @@ nsMessengerFreeDesktopIntegration::Observe(nsISupports *aSubject, const char *aT
 		    prefName.Equals(PREF_BIFF_ALWAYS_SHOW_ICON) ||
 		    prefName.Equals(PREF_BIFF_USE_HW_INDICATOR) ||
 		    prefName.Equals(PREF_BIFF_HW_INDICATOR_FILE) ||
+		    prefName.Equals(PREF_BIFF_USE_KEYBOARD_LED) ||
 		    // for backward compatibility:
 		    prefName.Equals(PREF_BIFF_SHOW_ASUS_LED))
 		{
@@ -480,6 +483,7 @@ void nsMessengerFreeDesktopIntegration::ApplyPrefs()
 	mPrefBranch->GetBoolPref(PREF_BIFF_SHOW_ICON, &mShowBiffIcon);
 	mPrefBranch->GetBoolPref(PREF_BIFF_SHOW_ASUS_LED, &mUseHwIndicator);
 	mPrefBranch->GetBoolPref(PREF_BIFF_USE_HW_INDICATOR, &mUseHwIndicator);
+	mPrefBranch->GetIntPref(PREF_BIFF_USE_KEYBOARD_LED, &mUseKeyboardLed);
 	
 	// Try to autodetect the hw indicator filename.
 	// This still doesn't mean we'll use it; depends on mUseHwIndicator.
@@ -518,6 +522,14 @@ void nsMessengerFreeDesktopIntegration::ApplyPrefs()
 	else
 	{
 		HideHwIndicator();
+	}
+	
+	if (mUseKeyboardLed != 0)
+	{
+		XKeyboardControl kbControl;
+		kbControl.led = mUseKeyboardLed;
+		kbControl.led_mode = mHasBiff ? LedModeOn : LedModeOff;
+		XChangeKeyboardControl(GDK_DISPLAY(), KBLed | KBLedMode, &kbControl);
 	}
 	
 	if (mAlwaysShowBiffIcon)
