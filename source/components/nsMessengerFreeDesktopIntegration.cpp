@@ -463,18 +463,38 @@ nsMessengerFreeDesktopIntegration::Init()
 	prefService->GetBranch(nsnull, getter_AddRefs(mPrefBranch));
 	nsCOMPtr<nsIPref> pref = do_QueryInterface(mPrefBranch);
 	// ... with weak reference (PR_TRUE), to avoid cleaning up at shutdown.
-	rv = pref->AddObserver(PREF_BIFF_SHOW_ICON, this, PR_TRUE);
-	NS_ENSURE_SUCCESS(rv,rv);
-	rv = pref->AddObserver(PREF_BIFF_SHOW_ASUS_LED, this, PR_TRUE);
-	NS_ENSURE_SUCCESS(rv,rv);
-	rv = pref->AddObserver(PREF_BIFF_USE_HW_INDICATOR, this, PR_TRUE);
-	NS_ENSURE_SUCCESS(rv,rv);
-	rv = pref->AddObserver(PREF_BIFF_HW_INDICATOR_FILE, this, PR_TRUE);
-	NS_ENSURE_SUCCESS(rv,rv);
-	rv = pref->AddObserver(PREF_BIFF_ALWAYS_SHOW_ICON, this, PR_TRUE);
-	NS_ENSURE_SUCCESS(rv,rv);
-	rv = pref->AddObserver(PREF_BIFF_USE_KEYBOARD_LED, this, PR_TRUE);
-	NS_ENSURE_SUCCESS(rv,rv);
+	if (pref)
+	{
+		rv = pref->AddObserver(PREF_BIFF_SHOW_ICON, this, PR_TRUE);
+		NS_ENSURE_SUCCESS(rv,rv);
+		rv = pref->AddObserver(PREF_BIFF_SHOW_ASUS_LED, this, PR_TRUE);
+		NS_ENSURE_SUCCESS(rv,rv);
+		rv = pref->AddObserver(PREF_BIFF_USE_HW_INDICATOR, this, PR_TRUE);
+		NS_ENSURE_SUCCESS(rv,rv);
+		rv = pref->AddObserver(PREF_BIFF_HW_INDICATOR_FILE, this, PR_TRUE);
+		NS_ENSURE_SUCCESS(rv,rv);
+		rv = pref->AddObserver(PREF_BIFF_ALWAYS_SHOW_ICON, this, PR_TRUE);
+		NS_ENSURE_SUCCESS(rv,rv);
+		rv = pref->AddObserver(PREF_BIFF_USE_KEYBOARD_LED, this, PR_TRUE);
+		NS_ENSURE_SUCCESS(rv,rv);
+	}
+	else
+	{
+		nsCOMPtr<nsIPrefBranchInternal> prefInternal = do_QueryInterface(mPrefBranch);
+		NS_ENSURE_TRUE(prefInternal, NS_OK);
+		rv = prefInternal->AddObserver(PREF_BIFF_SHOW_ICON, this, PR_TRUE);
+		NS_ENSURE_SUCCESS(rv,rv);
+		rv = prefInternal->AddObserver(PREF_BIFF_SHOW_ASUS_LED, this, PR_TRUE);
+		NS_ENSURE_SUCCESS(rv,rv);
+		rv = prefInternal->AddObserver(PREF_BIFF_USE_HW_INDICATOR, this, PR_TRUE);
+		NS_ENSURE_SUCCESS(rv,rv);
+		rv = prefInternal->AddObserver(PREF_BIFF_HW_INDICATOR_FILE, this, PR_TRUE);
+		NS_ENSURE_SUCCESS(rv,rv);
+		rv = prefInternal->AddObserver(PREF_BIFF_ALWAYS_SHOW_ICON, this, PR_TRUE);
+		NS_ENSURE_SUCCESS(rv,rv);
+		rv = prefInternal->AddObserver(PREF_BIFF_USE_KEYBOARD_LED, this, PR_TRUE);
+		NS_ENSURE_SUCCESS(rv,rv);
+	}
 
 	// because we care about biff notifications
 	nsCOMPtr <nsIMsgMailSession> mailSession = do_GetService(NS_MSGMAILSESSION_CONTRACTID, &rv);
