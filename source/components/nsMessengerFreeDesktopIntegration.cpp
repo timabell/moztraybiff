@@ -41,36 +41,41 @@
 
 #include "nsMessengerFreeDesktopIntegration.h"
 #include <nsCOMPtr.h>
-#include <nsIMsgAccountManager.h>
-#include <nsIMsgMailSession.h>
+#include <nsIMsgMailSession.h> // Compatible with tb1.0
 #include <nsIMsgIncomingServer.h>
-#include <nsIMsgIdentity.h>
-#include <nsIMsgAccount.h>
-#include <nsIRDFResource.h>
+#include "nsIMsgIncomingServer10.h" // For compatibility with tb1.0
+#include <nsIMsgAccount.h> // Compatible with tb1.0
+#include <nsIRDFResource.h> // Compatible with tb1.0
 #include <nsIMsgFolder.h>
-#include <nsIMsgHdr.h>
+#include "nsIMsgFolder10.h" // For compatibility with tb1.0
+#include <nsIMsgHdr.h> // nsMsgDBHdr compatible with tb1.0
 #include <nsMsgBaseCID.h>
 #include <nsMsgFolderFlags.h>
 #include <nsIProfile.h>
-#include <nsIRDFService.h>
+#include <nsIRDFService.h> // Compatible with tb1.0
+#include <nsIPrefBranchInternal.h> // Only for NS_PREFBRANCH_PREFCHANGE_TOPIC_ID
 
-#include <nsIWindowMediator.h>
-#include <nsIDOMWindowInternal.h>
+#include <nsIWindowMediator.h> // Compatible with tb1.0
+#include <nsIDOMWindowInternal.h> // Compatible with tb1.0
 #include <nsPIDOMWindow.h>
 #ifndef MOZ_TRUNK_FINAL
 #include <nsIScriptGlobalObject.h>
 #endif
+#include "nsIScriptGlobalObject10.h"
 #include <nsIDocShell.h>
-#include <nsIBaseWindow.h>
+#include "nsIDocShell10.h"
+#include <nsIBaseWindow.h> // Compatible with tb1.0
 #include <nsIWidget.h>
+#include "nsIWidget10.h"
 
-#include <nsIMessengerWindowService.h>
+#include <nsIMessengerWindowService.h> // Compatible with 1.0
 #include <nsMsgUtils.h>
 #include <prprf.h>
 #include <nsIWeakReference.h>
 #include <nsIStringBundle.h>
 #include <nsIPrefService.h>
-#include <nsIPrefBranchInternal.h>
+#include <nsIPref.h>
+#include <nsStringAPI.h>
 
 #include <nsAppDirectoryServiceDefs.h>
 
@@ -182,28 +187,48 @@ void ResolveIconName(const nsAString &aIconName, const nsAString &aIconSuffix, n
 
 GdkWindow* GetGdkWindowForDOMWindow(nsISupports *window)
 {
+	nsCOMPtr<nsIBaseWindow> ppBaseWindow;
+	
 #ifndef MOZ_TRUNK_FINAL
-	nsCOMPtr<nsIScriptGlobalObject> ppScriptGlobalObj( do_QueryInterface(window) );
-	if ( !ppScriptGlobalObj )
-		return NULL;
+	nsCOMPtr<nsIScriptGlobalObject> ppScriptGlobalObj = do_QueryInterface(window);
+	if (ppScriptGlobalObj)
+	{
+		ppBaseWindow = do_QueryInterface( ppScriptGlobalObj->GetDocShell() );
+	}
+	else
+	{
+		nsCOMPtr<nsIScriptGlobalObject10> ppScriptGlobalObj10 = do_QueryInterface(window);
+		if (ppScriptGlobalObj10)
+		ppBaseWindow = do_QueryInterface( ppScriptGlobalObj->GetDocShell() );
+	}
 #else
 	nsCOMPtr<nsPIDOMWindow> win( do_QueryInterface(window) );
-	if ( !win )
-		return NULL;
+	if (win)
+		ppBaseWindow = do_QueryInterface( win->GetDocShell() );
 #endif
   
-#ifndef MOZ_TRUNK_FINAL
-	nsCOMPtr<nsIBaseWindow> ppBaseWindow = do_QueryInterface( ppScriptGlobalObj->GetDocShell() );
-#else
-	nsCOMPtr<nsIBaseWindow> ppBaseWindow = do_QueryInterface( win->GetDocShell() );
-#endif
 	if (!ppBaseWindow)
 		return NULL;
 
-	nsCOMPtr<nsIWidget> ppWidget;
-	ppBaseWindow->GetMainWidget( getter_AddRefs( ppWidget ) );
+	GdkWindow* pWindow = NULL;
+	nsCOMPtr<nsIWidget> pWidgetBase;
+	ppBaseWindow->GetMainWidget( getter_AddRefs(pWidgetBase) );
+	if (pWidgetBase)
+	{
+		nsCOMPtr<nsIWidget> pWidget;
+		nsCOMPtr<nsIWidget10> pWidget10;
+
+		if (pWidget = do_QueryInterface(pWidgetBase))
+		{
+			pWindow = reinterpret_cast<GdkWindow*>(pWidget->GetNativeData(NS_NATIVE_WIDGET));
+		}
+		else if (pWidget10 = do_QueryInterface(pWidgetBase))
+		{
+			pWindow = reinterpret_cast<GdkWindow*>(pWidget10->GetNativeData(NS_NATIVE_WIDGET));
+		}
+	}
  
-	return reinterpret_cast<GdkWindow*>( ppWidget->GetNativeData( NS_NATIVE_WIDGET ) );
+	return pWindow;
 }
 
 //! @brief Opens a (preferrably existing) window, optionally going to a certain message.
@@ -379,6 +404,7 @@ NS_INTERFACE_MAP_BEGIN(nsMessengerFreeDesktopIntegration)
 	NS_INTERFACE_MAP_ENTRY(nsIMessengerOSIntegration)
 	NS_INTERFACE_MAP_ENTRY(nsIMessengerFreeDesktopIntegration)
 	NS_INTERFACE_MAP_ENTRY(nsIFolderListener)
+	NS_INTERFACE_MAP_ENTRY(nsIFolderListener10)
 	NS_INTERFACE_MAP_ENTRY(nsIObserver)
 	NS_INTERFACE_MAP_ENTRY(nsISupportsWeakReference)
 NS_INTERFACE_MAP_END
@@ -397,29 +423,36 @@ nsMessengerFreeDesktopIntegration::Init()
 	 The following code is ripped from chatzilla-service.js.
 	*/
 	// Checking if we're disabled in the Chrome Registry.
-// Trunk builds no longer have rdf:chrome, and in addition, they avoid loading the component
-// when the extension is disabled so this check is no longer needed.
-#ifndef MOZ_TRUNK 
-	nsCOMPtr<nsIRDFService> rdfSvc = do_GetService("@mozilla.org/rdf/rdf-service;1", &rv);
-	NS_ENSURE_SUCCESS(rv, rv);
-	nsCOMPtr<nsIRDFDataSource> rdfDS;
-	rv = rdfSvc->GetDataSource("rdf:chrome", getter_AddRefs(rdfDS));
-	NS_ENSURE_SUCCESS(rv, rv);
-	nsCOMPtr<nsIRDFResource> resSelf;
-	rv = rdfSvc->GetResource(NS_LITERAL_CSTRING("urn:mozilla:package:traybiff"), getter_AddRefs(resSelf));
-	NS_ENSURE_SUCCESS(rv, rv);
-	nsCOMPtr<nsIRDFResource> resDisabled;
-	rv = rdfSvc->GetResource(NS_LITERAL_CSTRING("http://www.mozilla.org/rdf/chrome#disabled"), getter_AddRefs(resDisabled));
-	NS_ENSURE_SUCCESS(rv, rv);
-	nsCOMPtr<nsIRDFNode> resNode;
-	rv = rdfDS->GetTarget(resSelf, resDisabled, true, getter_AddRefs(resNode));
-	NS_ENSURE_SUCCESS(rv, rv);
-	if (resNode != NULL)
+	// Trunk builds no longer have rdf:chrome, and in addition, they avoid loading the component
+	// when the extension is disabled so this check is no longer needed.
 	{
-		// The chrome for this extension is marked as disabled.
-		return NS_ERROR_FAILURE;
+		nsCOMPtr<nsIRDFService> rdfSvc = do_GetService("@mozilla.org/rdf/rdf-service;1", &rv);
+		if (NS_SUCCEEDED(rv))
+		{
+			nsCOMPtr<nsIRDFDataSource> rdfDS;
+			rv = rdfSvc->GetDataSource("rdf:chrome", getter_AddRefs(rdfDS));
+			if (NS_SUCCEEDED(rv))
+			{
+				nsCOMPtr<nsIRDFResource> resSelf;
+				rv = rdfSvc->GetResource(NS_LITERAL_CSTRING("urn:mozilla:package:traybiff"), getter_AddRefs(resSelf));
+				if (NS_SUCCEEDED(rv))
+				{
+					nsCOMPtr<nsIRDFResource> resDisabled;
+					rv = rdfSvc->GetResource(NS_LITERAL_CSTRING("http://www.mozilla.org/rdf/chrome#disabled"), getter_AddRefs(resDisabled));
+					if (NS_SUCCEEDED(rv))
+					{
+						nsCOMPtr<nsIRDFNode> resNode;
+						rv = rdfDS->GetTarget(resSelf, resDisabled, true, getter_AddRefs(resNode));
+						if (NS_SUCCEEDED(rv) && (resNode != NULL))
+						{
+							// The chrome for this extension is marked as disabled.
+							return NS_ERROR_FAILURE;
+						}
+					}
+				}
+			}
+		}
 	}
-#endif
 
 	// get pref service
 	nsCOMPtr<nsIPrefService> prefService;
@@ -428,20 +461,25 @@ nsMessengerFreeDesktopIntegration::Init()
 	
 	// get mail.biff pref branch and watch it for interesting prefs changing
 	prefService->GetBranch(nsnull, getter_AddRefs(mPrefBranch));
-	nsCOMPtr<nsIPrefBranchInternal> rootBranchInternal = do_QueryInterface(mPrefBranch);
+	nsCOMPtr<nsIPref> pref = do_QueryInterface(mPrefBranch);
 	// ... with weak reference (PR_TRUE), to avoid cleaning up at shutdown.
-	rv = rootBranchInternal->AddObserver(PREF_BIFF_SHOW_ICON, this, PR_TRUE);
-	rv = rootBranchInternal->AddObserver(PREF_BIFF_SHOW_ASUS_LED, this, PR_TRUE);
-	rv = rootBranchInternal->AddObserver(PREF_BIFF_USE_HW_INDICATOR, this, PR_TRUE);
-	rv = rootBranchInternal->AddObserver(PREF_BIFF_HW_INDICATOR_FILE, this, PR_TRUE);
-	rv = rootBranchInternal->AddObserver(PREF_BIFF_ALWAYS_SHOW_ICON, this, PR_TRUE);
-	rv = rootBranchInternal->AddObserver(PREF_BIFF_USE_KEYBOARD_LED, this, PR_TRUE);
+	rv = pref->AddObserver(PREF_BIFF_SHOW_ICON, this, PR_TRUE);
+	NS_ENSURE_SUCCESS(rv,rv);
+	rv = pref->AddObserver(PREF_BIFF_SHOW_ASUS_LED, this, PR_TRUE);
+	NS_ENSURE_SUCCESS(rv,rv);
+	rv = pref->AddObserver(PREF_BIFF_USE_HW_INDICATOR, this, PR_TRUE);
+	NS_ENSURE_SUCCESS(rv,rv);
+	rv = pref->AddObserver(PREF_BIFF_HW_INDICATOR_FILE, this, PR_TRUE);
+	NS_ENSURE_SUCCESS(rv,rv);
+	rv = pref->AddObserver(PREF_BIFF_ALWAYS_SHOW_ICON, this, PR_TRUE);
+	NS_ENSURE_SUCCESS(rv,rv);
+	rv = pref->AddObserver(PREF_BIFF_USE_KEYBOARD_LED, this, PR_TRUE);
 	NS_ENSURE_SUCCESS(rv,rv);
 
 	// because we care about biff notifications
 	nsCOMPtr <nsIMsgMailSession> mailSession = do_GetService(NS_MSGMAILSESSION_CONTRACTID, &rv);
 	NS_ENSURE_SUCCESS(rv,rv);
-	rv = mailSession->AddFolderListener(this, nsIFolderListener::propertyFlagChanged | nsIFolderListener::boolPropertyChanged | nsIFolderListener::intPropertyChanged);
+	rv = mailSession->AddFolderListener(this, nsIFolderListener::propertyFlagChanged | nsIFolderListener::boolPropertyChanged | nsIFolderListener::intPropertyChanged | nsIFolderListener10::propertyFlagChanged | nsIFolderListener10::boolPropertyChanged | nsIFolderListener10::intPropertyChanged);
 	NS_ENSURE_SUCCESS(rv,rv);
 	// In the future, we might want to add more properties here, to enable us to display
 	// the unread message count etc.
@@ -459,7 +497,6 @@ nsMessengerFreeDesktopIntegration::Observe(nsISupports *aSubject, const char *aT
 {
 	if (nsCRT::strcmp(aTopic, NS_PREFBRANCH_PREFCHANGE_TOPIC_ID) == 0)
 	{
-		nsCOMPtr<nsIPrefBranchInternal> pPrefBranch( do_QueryInterface(aSubject) );
 		nsCAutoString prefName;
 		prefName.AppendWithConversion(aData);
 		
@@ -546,34 +583,40 @@ void nsMessengerFreeDesktopIntegration::ApplyPrefs()
 }
 
 NS_IMETHODIMP
-nsMessengerFreeDesktopIntegration::OnItemPropertyChanged
-#ifdef MOZ_TRUNK
-(nsIRDFResource *, nsIAtom *, char const *, char const *)
-#else
-(nsISupports*, nsIAtom*, const char*, const char*)
-#endif
+nsMessengerFreeDesktopIntegration::OnItemPropertyChanged(nsIRDFResource *, nsIAtom *, char const *, char const *)
+{
+  return NS_OK;
+}
+
+// For compatibility with tb1.0
+NS_IMETHODIMP
+nsMessengerFreeDesktopIntegration::OnItemPropertyChanged(nsISupports*, nsIAtom*, const char*, const char*)
 {
   return NS_OK;
 }
 
 NS_IMETHODIMP
-nsMessengerFreeDesktopIntegration::OnItemUnicharPropertyChanged
-#ifdef MOZ_TRUNK
-(nsIRDFResource *, nsIAtom *, const PRUnichar *, const PRUnichar *)
-#else
-(nsISupports*, nsIAtom*, const PRUnichar*, const PRUnichar*)
-#endif
+nsMessengerFreeDesktopIntegration::OnItemUnicharPropertyChanged(nsIRDFResource *, nsIAtom *, const PRUnichar *, const PRUnichar *)
+{
+  return NS_OK;
+}
+
+// For compatibility with tb1.0
+NS_IMETHODIMP
+nsMessengerFreeDesktopIntegration::OnItemUnicharPropertyChanged(nsISupports*, nsIAtom*, const PRUnichar*, const PRUnichar*)
 {
   return NS_OK;
 }
 
 NS_IMETHODIMP
-nsMessengerFreeDesktopIntegration::OnItemRemoved
-#ifdef MOZ_TRUNK
-(nsIRDFResource *, nsISupports *)
-#else
-(nsISupports*, nsISupports*, const char*)
-#endif
+nsMessengerFreeDesktopIntegration::OnItemRemoved(nsIRDFResource *, nsISupports *)
+{
+  return NS_OK;
+}
+
+// For compatibility with tb1.0
+NS_IMETHODIMP
+nsMessengerFreeDesktopIntegration::OnItemRemoved(nsISupports*, nsISupports*, const char*)
 {
   return NS_OK;
 }
@@ -592,124 +635,172 @@ nsresult nsMessengerFreeDesktopIntegration::GetStringBundle(const char* src, nsI
 
 void nsMessengerFreeDesktopIntegration::FillToolTipInfo()
 {
-  // iterate over all the folders in mFoldersWithNewMail
-  nsXPIDLString accountName;
-  nsXPIDLCString hostName; 
-  nsAutoString toolTipText;
-  nsCOMPtr<nsISupports> supports;
-  nsCOMPtr<nsIMsgFolder> folder;
-  nsCOMPtr<nsIWeakReference> weakReference;
-  PRInt32 numNewMessages = 0;
-  PRInt32 numNewMessagesTotal = 0;
+	// iterate over all the folders in mFoldersWithNewMail
+	nsXPIDLString accountName;
+	nsXPIDLCString hostName; 
+	nsAutoString toolTipText;
+	PRInt32 numNewMessages = 0;
+	PRInt32 numNewMessagesTotal = 0;
 
-  PRUint32 count = 0;
-  mFoldersWithNewMail->Count(&count);
+	PRUint32 count = 0;
+	mFoldersWithNewMail->Count(&count);
 
-  for (PRUint32 index = 0; index < count; index++)
-  {
-    supports = getter_AddRefs(mFoldersWithNewMail->ElementAt(index));
-    weakReference = do_QueryInterface(supports);
-    folder = do_QueryReferent(weakReference);
-    if (folder)
-    {
-      folder->GetPrettiestName(getter_Copies(accountName));
-      numNewMessages = 0;   
-      folder->GetNumNewMessages(PR_TRUE, &numNewMessages);
-      numNewMessagesTotal += numNewMessages;
-    } // if we got a folder
-  } // for each folder
- 
-  nsCOMPtr<nsIStringBundle> bundle; 
-  GetStringBundle(STRING_BUNDLE_MESSENGER, getter_AddRefs(bundle));
-  if (bundle)
-  { 
-    nsAutoString numNewMsgsText;     
-    numNewMsgsText.AppendInt(numNewMessagesTotal);
+	for (PRUint32 index = 0; index < count; index++)
+	{
+		nsCOMPtr<nsISupports> supports;
+		supports = getter_AddRefs(mFoldersWithNewMail->ElementAt(index));
+		nsCOMPtr<nsIWeakReference> weakReference;
+		weakReference = do_QueryInterface(supports);
+		nsCOMPtr<nsIMsgFolder> folder;
+		nsCOMPtr<nsIMsgFolder10> folder10;
+		if (folder = do_QueryReferent(weakReference))
+		{
+			folder->GetPrettiestName(getter_Copies(accountName));
+			numNewMessages = 0;   
+			folder->GetNumNewMessages(PR_TRUE, &numNewMessages);
+			numNewMessagesTotal += numNewMessages;
+		}
+		else if (folder10 = do_QueryReferent(weakReference))
+		{
+			folder10->GetPrettiestName(getter_Copies(accountName));
+			numNewMessages = 0;   
+			folder10->GetNumNewMessages(PR_TRUE, &numNewMessages);
+			numNewMessagesTotal += numNewMessages;
+		}
+	}
+	
+	nsCOMPtr<nsIStringBundle> bundle; 
+	GetStringBundle(STRING_BUNDLE_MESSENGER, getter_AddRefs(bundle));
+	if (bundle)
+	{ 
+		nsAutoString numNewMsgsText;     
+		numNewMsgsText.AppendInt(numNewMessagesTotal);
 
-    const PRUnichar *formatStrings[] =
-    {
-      numNewMsgsText.get()
-    };
+		const PRUnichar *formatStrings[] =
+		{
+			numNewMsgsText.get()
+		};
+  
+		nsXPIDLString text;
+		if (numNewMessages == 1)
+			bundle->FormatStringFromName(NS_LITERAL_STRING("biffNotification_message").get(), formatStrings, 2, getter_Copies(text));
+		else
+			bundle->FormatStringFromName(NS_LITERAL_STRING("biffNotification_messages").get(), formatStrings, 2, getter_Copies(text));
     
-    nsXPIDLString text;
-    if (numNewMessages == 1)
-      bundle->FormatStringFromName(NS_LITERAL_STRING("biffNotification_message").get(), formatStrings, 2, getter_Copies(text));
-    else
-      bundle->FormatStringFromName(NS_LITERAL_STRING("biffNotification_messages").get(), formatStrings, 2, getter_Copies(text));
-      
-    toolTipText = accountName + NS_LITERAL_STRING(" ") + text;
-  } // if we got a bundle
-
-  SetToolTipString(toolTipText.get());
+		toolTipText = accountName + NS_LITERAL_STRING(" ") + text;
+	} // if we got a bundle
+	
+	SetToolTipString(toolTipText.get());
 }
 
 // get the first top level folder which we know has new mail, then enumerate over all the subfolders
 // looking for the first real folder with new mail. Return the folderURI for that folder.
 nsresult nsMessengerFreeDesktopIntegration::GetFirstFolderWithNewMail(char ** aFolderURI, char ** aMessageURI)
 {
-  nsresult rv;
-  NS_ENSURE_TRUE(mFoldersWithNewMail, NS_ERROR_FAILURE); 
+	nsresult rv;
+	NS_ENSURE_TRUE(mFoldersWithNewMail, NS_ERROR_FAILURE); 
 
-  nsCOMPtr<nsISupports> supports;
-  nsCOMPtr<nsIMsgFolder> folder;
-  nsCOMPtr<nsIWeakReference> weakReference;
-  PRInt32 numNewMessages = 0;
+	PRInt32 numNewMessages = 0;
 
-  PRUint32 count = 0;
-  mFoldersWithNewMail->Count(&count);
+	PRUint32 count = 0;
+	mFoldersWithNewMail->Count(&count);
 
-  if (!count)  // kick out if we don't have any folders with new mail
-    return NS_OK;
+	if (count == 0)  // kick out if we don't have any folders with new mail
+		return NS_OK;
 
-  supports = getter_AddRefs(mFoldersWithNewMail->ElementAt(0));
-  weakReference = do_QueryInterface(supports);
-  folder = do_QueryReferent(weakReference);
-  
-  if (folder)
-  {
-    PRUint32 biffState = nsIMsgFolder::nsMsgBiffState_NoMail; 
-    nsCOMPtr<nsIMsgFolder> msgFolder;
-    nsString msgURI;
-    // enumerate over the folders under this root folder till we find one with new mail....
-    nsCOMPtr<nsISupportsArray> allFolders;
-    NS_NewISupportsArray(getter_AddRefs(allFolders));
-    rv = folder->ListDescendents(allFolders);
-    NS_ENSURE_SUCCESS(rv, rv);
+	nsCOMPtr<nsISupports> supports = getter_AddRefs(mFoldersWithNewMail->ElementAt(0));
+	nsCOMPtr<nsIWeakReference> weakReference = do_QueryInterface(supports);
+	nsCOMPtr<nsIMsgFolder> folder;
+	nsCOMPtr<nsIMsgFolder10> folder10;
 
-    nsCOMPtr<nsIEnumerator> enumerator;
-    allFolders->Enumerate(getter_AddRefs(enumerator));
-    if (enumerator)
-    {
-      nsCOMPtr<nsISupports> supports;
-      nsresult more = enumerator->First();
-      while (NS_SUCCEEDED(more))
-      {
-        rv = enumerator->CurrentItem(getter_AddRefs(supports));
-        if (supports)
-        {			
-          msgFolder = do_QueryInterface(supports, &rv);
-          if (msgFolder)
-          {
-            numNewMessages = 0;   
-            msgFolder->GetNumNewMessages(PR_FALSE, &numNewMessages);
-            if (numNewMessages > 0)
-            {
-              nsCOMPtr<nsIMsgDBHdr> msgHeader;
-              msgFolder->GetFirstNewMessage(getter_AddRefs(msgHeader));
-              msgFolder->GetUriForMsg(msgHeader, aMessageURI);
-              break; // kick out of the while loop
-            }
-            more = enumerator->Next();
-          }
-        } // if we have a folder
-      }  // if we have more potential folders to enumerate
-    }  // if enumerator
-    
-    if (msgFolder)
-      msgFolder->GetURI(aFolderURI);
-  }
+	if (folder = do_QueryReferent(weakReference))
+	{
+		PRUint32 biffState = nsIMsgFolder::nsMsgBiffState_NoMail; 
+		nsString msgURI;
+		// enumerate over the folders under this root folder till we find one with new mail....
+		nsCOMPtr<nsISupportsArray> allFolders;
+		NS_NewISupportsArray(getter_AddRefs(allFolders));
+		rv = folder->ListDescendents(allFolders);
+		NS_ENSURE_SUCCESS(rv, rv);
 
-  return NS_OK;
+		nsCOMPtr<nsIMsgFolder> msgFolder;
+		nsCOMPtr<nsIEnumerator> enumerator;
+		allFolders->Enumerate(getter_AddRefs(enumerator));
+		if (enumerator)
+		{
+			nsresult more = enumerator->First();
+			while (NS_SUCCEEDED(more))
+			{
+				nsCOMPtr<nsISupports> supports;
+				rv = enumerator->CurrentItem(getter_AddRefs(supports));
+				if (supports)
+				{			
+					msgFolder = do_QueryInterface(supports, &rv);
+					if (msgFolder)
+					{
+						numNewMessages = 0;   
+						msgFolder->GetNumNewMessages(PR_FALSE, &numNewMessages);
+						if (numNewMessages > 0)
+						{
+							nsCOMPtr<nsIMsgDBHdr> msgHeader;
+							msgFolder->GetFirstNewMessage(getter_AddRefs(msgHeader));
+							msgFolder->GetUriForMsg(msgHeader, aMessageURI);
+							break; // kick out of the while loop
+						}
+						more = enumerator->Next();
+					}
+				} // if we have a folder
+			}  // if we have more potential folders to enumerate
+		}  // if enumerator
+	  
+		if (msgFolder)
+			msgFolder->GetURI(aFolderURI);
+	}
+	else if (folder10 = do_QueryReferent(weakReference))
+	{
+		PRUint32 biffState = nsIMsgFolder10::nsMsgBiffState_NoMail; 
+		nsString msgURI;
+		// enumerate over the folders under this root folder till we find one with new mail....
+		nsCOMPtr<nsISupportsArray> allFolders;
+		NS_NewISupportsArray(getter_AddRefs(allFolders));
+		rv = folder10->ListDescendents(allFolders);
+		NS_ENSURE_SUCCESS(rv, rv);
+
+		nsCOMPtr<nsIMsgFolder10> msgFolder;
+		nsCOMPtr<nsIEnumerator> enumerator;
+		allFolders->Enumerate(getter_AddRefs(enumerator));
+		if (enumerator)
+		{
+			nsresult more = enumerator->First();
+			while (NS_SUCCEEDED(more))
+			{
+				nsCOMPtr<nsISupports> supports;
+				rv = enumerator->CurrentItem(getter_AddRefs(supports));
+				if (supports)
+				{			
+					msgFolder = do_QueryInterface(supports, &rv);
+					if (msgFolder)
+					{
+						numNewMessages = 0;   
+						msgFolder->GetNumNewMessages(PR_FALSE, &numNewMessages);
+						if (numNewMessages > 0)
+						{
+							nsCOMPtr<nsIMsgDBHdr> msgHeader;
+							msgFolder->GetFirstNewMessage(getter_AddRefs(msgHeader));
+							msgFolder->GetUriForMsg(msgHeader, aMessageURI);
+							break; // kick out of the while loop
+						}
+						more = enumerator->Next();
+					}
+				} // if we have a folder
+			}  // if we have more potential folders to enumerate
+		}  // if enumerator
+	  
+		if (msgFolder)
+			msgFolder->GetURI(aFolderURI);
+	}
+
+	return NS_OK;
 }
 
 void nsMessengerFreeDesktopIntegration::AddBiffIcon()
@@ -989,16 +1080,14 @@ void nsMessengerFreeDesktopIntegration::ClearToolTip()
 	egg_status_icon_set_tooltip(mTrayIcon, "Mozilla", NULL);
 }
 
-#ifndef MOZ_TRUNK
+// For compatibility with tb1.0
 NS_IMETHODIMP
-nsMessengerFreeDesktopIntegration::OnItemPropertyFlagChanged(nsISupports *item, nsIAtom *property, PRUint32 oldFlag, PRUint32 newFlag)
+nsMessengerFreeDesktopIntegration::OnItemPropertyFlagChanged(nsISupports *item, nsIAtom *aProperty, PRUint32 oldFlag, PRUint32 newFlag)
 {
-	nsresult rv = NS_OK;
-
 	// if we got new mail show a icon in the system tray
-	if (mBiffStateAtom == property && mFoldersWithNewMail)
+	if (mBiffStateAtom == aProperty && mFoldersWithNewMail)
 	{
-		nsCOMPtr<nsIMsgFolder> folder = do_QueryInterface(item);
+		nsCOMPtr<nsIMsgFolder10> folder = do_QueryInterface(item);
 		NS_ENSURE_TRUE(folder, NS_OK);
 
 		if (newFlag == nsIMsgFolder::nsMsgBiffState_NewMail) 
@@ -1006,7 +1095,7 @@ nsMessengerFreeDesktopIntegration::OnItemPropertyFlagChanged(nsISupports *item, 
 			// if the icon is not already visible, only show a system tray icon iff 
 			// we are performing biff (as opposed to the user getting new mail)
 			PRBool performingBiff = PR_FALSE;
-			nsCOMPtr<nsIMsgIncomingServer> server;
+			nsCOMPtr<nsIMsgIncomingServer10> server;
 			folder->GetServer(getter_AddRefs(server));
 			if (server)
 				server->GetPerformingBiff(&performingBiff);
@@ -1019,7 +1108,7 @@ nsMessengerFreeDesktopIntegration::OnItemPropertyFlagChanged(nsISupports *item, 
 			PRUint32 index = 0; 
 			mFoldersWithNewMail->Count(&count);
 			nsCOMPtr<nsISupports> supports;
-			nsCOMPtr<nsIMsgFolder> oldFolder;
+			nsCOMPtr<nsIMsgFolder10> oldFolder;
 			nsCOMPtr<nsIWeakReference> weakReference;
 			for (index = 0; index < count; index++)
 			{
@@ -1048,48 +1137,46 @@ nsMessengerFreeDesktopIntegration::OnItemPropertyFlagChanged(nsISupports *item, 
 			OnBiffChange();
 		}
 	} // if the biff property changed
-  
+	
 	return NS_OK;
 }
-#else
+
+// For compatibility with tb1.0
 NS_IMETHODIMP
 nsMessengerFreeDesktopIntegration::OnItemPropertyFlagChanged(nsIMsgDBHdr *item, nsIAtom *property, PRUint32 oldFlag, PRUint32 newFlag)
 {
 	return NS_OK;
 }
-#endif
 
 NS_IMETHODIMP
-nsMessengerFreeDesktopIntegration::OnItemAdded
-#ifdef MOZ_TRUNK
-(nsIRDFResource *, nsISupports *)
-#else
-(nsISupports*, nsISupports*, const char*)
-#endif
+nsMessengerFreeDesktopIntegration::OnItemAdded(nsIRDFResource *, nsISupports *)
+{
+  return NS_OK;
+}
+
+// For compatibility with tb1.0
+NS_IMETHODIMP
+nsMessengerFreeDesktopIntegration::OnItemAdded(nsISupports*, nsISupports*, const char*)
 {
   return NS_OK;
 }
 
 NS_IMETHODIMP
-nsMessengerFreeDesktopIntegration::OnItemBoolPropertyChanged
-#ifdef MOZ_TRUNK
-(nsIRDFResource *aItem, nsIAtom *aProperty, PRBool aOldValue, PRBool aNewValue)
-#else
-(nsISupports*, nsIAtom*, int, int)
-#endif
+nsMessengerFreeDesktopIntegration::OnItemBoolPropertyChanged(nsIRDFResource *aItem, nsIAtom *aProperty, PRBool aOldValue, PRBool aNewValue)
+{
+  return NS_OK;
+}
+
+// For compatibility with tb1.0
+NS_IMETHODIMP
+nsMessengerFreeDesktopIntegration::OnItemBoolPropertyChanged(nsISupports*, nsIAtom*, int, int)
 {
   return NS_OK;
 }
 
 NS_IMETHODIMP
-nsMessengerFreeDesktopIntegration::OnItemIntPropertyChanged
-#ifdef MOZ_TRUNK
-(nsIRDFResource *aItem, nsIAtom *aProperty, int aOldValue, int aNewValue)
-#else
-(nsISupports*, nsIAtom*, int, int)
-#endif
+nsMessengerFreeDesktopIntegration::OnItemIntPropertyChanged(nsIRDFResource *aItem, nsIAtom *aProperty, int aOldValue, int aNewValue)
 {
-	#ifdef MOZ_TRUNK
 	// if we got new mail show a icon in the system tray
 	if (mBiffStateAtom == aProperty && mFoldersWithNewMail)
 	{
@@ -1143,8 +1230,14 @@ nsMessengerFreeDesktopIntegration::OnItemIntPropertyChanged
 			OnBiffChange();
 		}
 	} // if the biff property changed
-	#endif
 	
+	return NS_OK;
+}
+
+// For compatibility with tb1.0
+NS_IMETHODIMP
+nsMessengerFreeDesktopIntegration::OnItemIntPropertyChanged(nsISupports*, nsIAtom*, int, int)
+{
 	return NS_OK;
 }
 

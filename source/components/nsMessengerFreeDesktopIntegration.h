@@ -44,6 +44,7 @@
 #include "nsIMessengerFreeDesktopIntegration.h"
 #include <nsIMessengerOSIntegration.h>
 #include <nsIFolderListener.h>
+#include "nsIFolderListener10.h"
 #include <nsIObserver.h>
 #include <nsIAtom.h>
 #include <nsITimer.h>
@@ -67,6 +68,7 @@ class nsMessengerFreeDesktopIntegration :
 	public nsIMessengerFreeDesktopIntegration,
 	public nsIMessengerOSIntegration,
 	public nsIFolderListener,
+	public nsIFolderListener10,
 	public nsIObserver,
 	public nsSupportsWeakReference
 {
@@ -80,6 +82,16 @@ public:
 	NS_DECL_NSIFOLDERLISTENER
 	NS_DECL_NSIOBSERVER
 	NS_DECL_NSIMESSENGERFREEDESKTOPINTEGRATION
+
+// Instead of NS_DECL_NSIFOLDERLISTENER10
+public:
+	NS_IMETHOD OnItemAdded(nsISupports *parentItem, nsISupports *item, const char *viewString);
+	NS_IMETHOD OnItemRemoved(nsISupports *parentItem, nsISupports *item, const char *viewString);
+	NS_IMETHOD OnItemPropertyChanged(nsISupports *item, nsIAtom *property, const char *oldValue, const char *newValue);
+	NS_IMETHOD OnItemIntPropertyChanged(nsISupports *item, nsIAtom *property, PRInt32 oldValue, PRInt32 newValue);
+	NS_IMETHOD OnItemBoolPropertyChanged(nsISupports *item, nsIAtom *property, PRBool oldValue, PRBool newValue);
+	NS_IMETHOD OnItemUnicharPropertyChanged(nsISupports *item, nsIAtom *property, const PRUnichar *oldValue, const PRUnichar *newValue);
+	NS_IMETHOD OnItemPropertyFlagChanged(nsISupports *item, nsIAtom *property, PRUint32 oldFlag, PRUint32 newFlag);
 
 private:
 	void ApplyPrefs();
