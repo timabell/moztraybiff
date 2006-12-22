@@ -379,10 +379,14 @@ nsMessengerFreeDesktopIntegration::nsMessengerFreeDesktopIntegration() :
 	NS_NewISupportsArray(getter_AddRefs(mFoldersWithNewMail));
 
 	nsCOMPtr<nsILocalFile> iconFile;
-	ResolveIconName(NS_LITERAL_STRING("messengerWindow16"), NS_LITERAL_STRING(".xpm"), getter_AddRefs(iconFile));
+	ResolveIconName(NS_LITERAL_STRING("messengerWindow16"), NS_LITERAL_STRING(".png"), getter_AddRefs(iconFile));
+	if (!iconFile)
+		ResolveIconName(NS_LITERAL_STRING("messengerWindow16"), NS_LITERAL_STRING(".xpm"), getter_AddRefs(iconFile));
 	if (!iconFile)
 	{
-		ResolveIconName(NS_LITERAL_STRING("mozicon16"), NS_LITERAL_STRING(".xpm"), getter_AddRefs(iconFile));
+		ResolveIconName(NS_LITERAL_STRING("mozicon16"), NS_LITERAL_STRING(".png"), getter_AddRefs(iconFile));
+		if (!iconFile)
+			ResolveIconName(NS_LITERAL_STRING("mozicon16"), NS_LITERAL_STRING(".xpm"), getter_AddRefs(iconFile));
 	}
 	if (iconFile)
 	{
