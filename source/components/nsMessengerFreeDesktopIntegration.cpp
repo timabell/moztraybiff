@@ -97,6 +97,9 @@ const char* HW_INDICATOR_CONTROL_FILENAMES[] = {
 	"/proc/driver/acerhk/led"
 };
 
+const int ICON_WIDTH = 16;
+const int ICON_HEIGHT = 16;
+
 // Prefs in use
 const char* PREF_BIFF_SHOW_ICON = "mail.biff.show_icon";
 const char* PREF_BIFF_SHOW_ASUS_LED = "mail.biff.show_asus_led";
@@ -962,7 +965,7 @@ void nsMessengerFreeDesktopIntegration::OnBiffChange()
 			{
 				ClearToolTip();
 				GError* err = NULL;
-				GdkPixbuf* pixbuf = gdk_pixbuf_new_from_file(mBrandIconPath.get(), &err);
+				GdkPixbuf* pixbuf = gdk_pixbuf_new_from_file_at_scale(mBrandIconPath.get(), ICON_WIDTH, ICON_HEIGHT, FALSE, &err);
 				if (pixbuf != NULL)
 				{
 					egg_status_icon_set_from_pixbuf(mTrayIcon, pixbuf);
