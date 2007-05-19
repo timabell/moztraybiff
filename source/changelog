@@ -2,6 +2,11 @@
 
 	* Support indication via keyboard LEDs.
 
+	* Minor fixes for Thunderbird 2.0.
+
+	* Shipping a single XPI for all platforms since bug 335143
+	  is fixed on Thunderbird 2.0.
+
 1.2.2 (2006-04-24):
 
 	* Update install.rdf to mark Thunderbird service releases
