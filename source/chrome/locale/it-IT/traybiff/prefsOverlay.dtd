@@ -1,3 +1,3 @@
-<!ENTITY newMailNotificationShowIcon.label "Mostra una icona nell'area di notifica">
-<!ENTITY alwaysShowTrayIcon.label "Mostra sempre una icona nell'area di notifica (accesso rapido alla mail)">
-<!ENTITY useHwIndicator.label "Usa l'indicatore nativo di nuova mail per i computers che ne sono provvisti">
+<!ENTITY showTrayIconForNewMessages.label "Mostra un'icona nell'area di notifica">
+<!ENTITY alwaysShowTrayIcon.label  "Mostra sempre l'icona (accesso rapido alla posta)">
+<!ENTITY useHwIndicator.label "Se disponibile, utilizza l'indicatore nativo per i nuovi messaggi">

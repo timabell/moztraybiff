@@ -8,7 +8,9 @@
 	</RDF:Seq>
 
 	<!-- locale information -->
-	<RDF:Description about="urn:mozilla:locale:it-IT">
+	<RDF:Description about="urn:mozilla:locale:it-IT"
+	                 chrome:displayName="English (US)"
+                         chrome:name="it-IT">
 		<chrome:packages>
 			<RDF:Seq about="urn:mozilla:locale:it-IT:packages">
 				<RDF:li resource="urn:mozilla:locale:it-IT:traybiff"/>
@@ -16,6 +18,6 @@
 		</chrome:packages>
 	</RDF:Description>
 
-	<RDF:Description about="urn:mozilla:locale:it-IT:traybiff" chrome:localeVersion="1.2.3"/>
+	<RDF:Description about="urn:mozilla:locale:it-IT:traybiff" chrome:localeVersion="1.2.2"/>
 
 </RDF:RDF>

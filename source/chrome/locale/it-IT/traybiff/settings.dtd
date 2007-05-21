@@ -1,5 +1,5 @@
-<!ENTITY dialog.title   "Icona per Nuova Mail">
-<!ENTITY features.caption  "Prestazioni">
-<!ENTITY showTrayIconForNewMessages.label  "Mostra una icona nell'area di notifica quando arriva un nuovo messaggio">
-<!ENTITY alwaysShowTrayIcon.label  "Mostra sempre una icona nell'area di notifica (accesso rapido a Thunderbird)">
-<!ENTITY useHwIndicator.label "Usa l'indicatore nativo di nuova mail per i computers che ne sono provvisti">
+<!ENTITY dialog.title "New Mail Icon">
+<!ENTITY features.caption  "Opzioni">
+<!ENTITY showTrayIconForNewMessages.label  "Mostra un'icona nell'area di notifica alla ricezione di nuovi messaggi">
+<!ENTITY alwaysShowTrayIcon.label  "Mostra sempre l'icona (accesso rapido a Thunderbird)">
+<!ENTITY useHwIndicator.label "Se disponibili, utilizza le notifiche del sistema operativo per i nuovi messaggi.">
