@@ -1,6 +1,9 @@
 1.2.4 (?):
 
 	* Improved Italian translation, courtesy of Simone.
+	
+	* Allow the New Mail alert feature introduced with Thunderbird 2.0 to be used
+	  along with this add-on.
 
 1.2.3 (2007-05-19):
 
