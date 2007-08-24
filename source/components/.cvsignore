@@ -1,0 +1,6 @@
+eggmarshalers.c
+eggmarshalers.h
+*.xpt
+nsIMessengerFreeDesktopIntegration.h
+trayBiffIcon.h
+xulAppInfo
