@@ -112,6 +112,12 @@ const char* PREF_BIFF_USE_KEYBOARD_LED = "mail.biff.use_keyboard_led";
 const char* STRING_BUNDLE_MESSENGER = "chrome://messenger/locale/messenger.properties";
 const char* STRING_BUNDLE_TRAYBIFF = "chrome://traybiff/locale/traybiff.properties";
 
+// We delegate to the Thunderbird component which we override.
+#define NS_MESSENGERUNIXINTEGRATION_CID \
+  {0xf62f3d3a, 0x1dd1, 0x11b2, {0xa5, 0x16, 0xef, 0xad, 0xb1, 0x31, 0x61, 0x5c}}
+  
+static NS_DEFINE_CID(kMessengerUnixIntegrationCID, NS_MESSENGERUNIXINTEGRATION_CID);
+
 // Useful for debugging.
 inline void PrintAtom(nsIAtom* atom)
 {
@@ -420,6 +426,12 @@ nsresult
 nsMessengerFreeDesktopIntegration::Init()
 {
 	nsresult rv;
+	
+	// First, give the built-in component which we override a chance to initialize.
+	{
+		nsCOMPtr<nsIMessengerOSIntegration> messengerUnixIntegration( do_CreateInstance(kMessengerUnixIntegrationCID, &rv) );
+		// This is enough to trigger the static 'nsMessengerUnixIntegration::Init' method.
+	}
 	
 	/*
 	 Support for Thunderbird's "Disable Extension" functionality.
