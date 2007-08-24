@@ -16,6 +16,6 @@
 		</chrome:packages>
 	</RDF:Description>
 
-	<RDF:Description about="urn:mozilla:locale:de-DE:traybiff" chrome:localeVersion="1.2.3"/>
+	<RDF:Description about="urn:mozilla:locale:de-DE:traybiff" chrome:localeVersion="1.2.4"/>
 
 </RDF:RDF>
