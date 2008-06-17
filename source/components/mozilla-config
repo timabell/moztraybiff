@@ -55,7 +55,7 @@ if ($cflags)
 		$cflags = `$mozilla_config --cflags`;
 		chomp $cflags;
 		$cflags =~ /^-I(.*?)(\s|$)/
-			or die "Could not retrieve include path.\n";
+			or die "Error: Could not retrieve include path.\n";
 		$include_path = $1;
 	}
 	my @component_paths = glob("$include_path/*/");
