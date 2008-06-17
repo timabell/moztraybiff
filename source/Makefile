@@ -19,7 +19,7 @@ XPI_VERSION := $(XPI_VERSION)-moz${MOZILLA_VERSION}
 XPI_EXTRA_FILES = install.js
 endif
 ifeq ($(MOZILLA_PLATFORM),tbird)
-REAL_CONFIG = mozilla-thunderbird-config
+REAL_CONFIG = $(shell which thunderbird-config mozilla-thunderbird-config | head -1)
 XPI_VERSION := $(XPI_VERSION)-tb${MOZILLA_VERSION}
 XPI_EXTRA_FILES = install.rdf
 endif

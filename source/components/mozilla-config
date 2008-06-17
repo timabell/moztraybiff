@@ -19,8 +19,9 @@ GetOptions(
 	"real-config=s" => \$mozilla_config_bin,
 );
 
-$mozilla_config_bin = "mozilla-config"
+$mozilla_config_bin = `which mozilla-config thunderbird-config | head -1`
 	if (!$mozilla_config_bin);
+chomp($mozilla_config_bin);
 my $mozilla_config_prefix = $ENV{'MOZILLA_CONFIG_PREFIX'};
 my $mozilla_config = 
 	$mozilla_config_prefix ?
@@ -54,6 +55,7 @@ if ($cflags)
 	{
 		$cflags = `$mozilla_config --cflags`;
 		chomp $cflags;
+		print "$cflags ";
 		$cflags =~ /^-I(.*?)(\s|$)/
 			or die "Error: Could not retrieve include path.\n";
 		$include_path = $1;
