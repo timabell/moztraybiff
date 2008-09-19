@@ -13,7 +13,9 @@
 				<RDF:li resource="urn:mozilla:extension:{2e1b75f1-6b5a-4f1d-89b4-424f636e4fba}:1.2.1"/>
 				<RDF:li resource="urn:mozilla:extension:{2e1b75f1-6b5a-4f1d-89b4-424f636e4fba}:1.2.2"/>
 				<RDF:li resource="urn:mozilla:extension:{2e1b75f1-6b5a-4f1d-89b4-424f636e4fba}:1.2.3"/>
+<!--
 				<RDF:li resource="urn:mozilla:extension:{2e1b75f1-6b5a-4f1d-89b4-424f636e4fba}:1.2.4"/>
+-->
 			</RDF:Seq>
 		</em:updates>
 		<!-- DO NOT CHANGE: 1.0.4 is the last version working on tb-0.7 -->
@@ -165,6 +167,7 @@
 		</em:targetApplication>
 	</RDF:Description>
 
+<!--
 	<RDF:Description about="urn:mozilla:extension:{2e1b75f1-6b5a-4f1d-89b4-424f636e4fba}:1.2.4">
 		<em:version>1.2.4</em:version>
 		<em:targetApplication>
@@ -176,4 +179,5 @@
 			</Description>
 		</em:targetApplication>
 	</RDF:Description>
+-->
 </RDF:RDF>
