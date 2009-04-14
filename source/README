@@ -15,6 +15,14 @@ Compilation:
    To compile the extension, simply run 'make'. You might need to specify
    some of the options specified further on the 'make' command-line.
 
+Dependencies:
+
+You will need to install development libraries for thunderbird, gitk2 and xulrunner.
+
+Under Ubuntu 8.10 run:
+ sudo apt-get install thunderbird-dev xulrunner-dev libgtk2.0-dev
+ make MOZILLA_PLATFORM=tbird REAL_CONFIG=/usr/bin/thunderbird-config
+
 Compilation Options:
 
    MOZILLA_PLATFORM=(suite|tbird) *OBLIGATORY*
